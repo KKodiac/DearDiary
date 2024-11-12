@@ -7,7 +7,7 @@ public struct Registration: Sendable {
     public init() { }
     @ObservableState
     public struct State: Sendable {
-        @Shared(.appStorage("uid")) var uid = ""
+        @Shared var uid: String
         var email: String
         var name: String
         var password: String
@@ -16,6 +16,7 @@ public struct Registration: Sendable {
         var error: Registration.FeatureError?
         
         init(
+            uid: String = "",
             email: String = "",
             name: String = "",
             password: String = "",
@@ -23,6 +24,7 @@ public struct Registration: Sendable {
             isPresented: Bool = false,
             error: Registration.FeatureError? = nil
         ) {
+            self._uid = Shared(wrappedValue: uid, .appStorage("uid"))
             self.email = email
             self.name = name
             self.password = password
@@ -65,29 +67,18 @@ public struct Registration: Sendable {
     
     public var body: some ReducerOf<Self> {
         BindingReducer(action: \.view)
-            
+        
         CombineReducers {
             NestedAction(\.view) { state, action in
                 switch action {
                 case .didTapSignUpWithEmail:
-                    guard state.password == state.confirmPassword else {
-                        return .send(.internal(.didFailFeatureError(.passwordConfirmationDoesNotMatch)))
-                    }
                     return .send(.internal(.didRequestEmailSignUp))
                 case .didTapNavigateToBack:
-                    return .run { send in
-                        await dismiss()
-                    }
+                    return .run { _ in await dismiss() }
                 case .didTapNavigateToSignIn:
                     return .send(.delegate(.navigateToSignIn))
-                case .binding(_):
+                case .binding:
                     return .none
-                }
-            }
-            
-            NestedAction(\.delegate) { state, action in
-                switch action {
-                default: return .none
                 }
             }
             

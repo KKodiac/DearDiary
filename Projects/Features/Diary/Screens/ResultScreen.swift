@@ -1,6 +1,9 @@
-import ComposableArchitecture
-import DesignSystem
+import Foundation
 import SwiftUI
+
+import ComposableArchitecture
+
+import DesignSystem
 
 public struct ResultScreen: View {
     @Environment(\.colorScheme) private var colorScheme
@@ -32,7 +35,7 @@ public struct ResultScreen: View {
     private var dateDivider: some View {
         DateDivider(
             colorScheme: colorScheme,
-            date: store.entry!.createdDate
+            date: Calendar.current.startOfDay(for: store.entry!.createdAt)
         )
         .padding(.bottom, 10)
     }

@@ -2,20 +2,21 @@ import Account
 import Diary
 import ComposableArchitecture
 import Foundation
+import FirebaseAuth
+import GoogleSignIn
 
 @Reducer
-struct DearDiary: Sendable {
+struct DearDiary {
     @ObservableState
     struct State: Sendable {
         @Shared(.appStorage("uid")) var uid = ""
-        @Shared(.appStorage("needs_initial_setup")) var needsInitialSetup = true
         @Shared(.appStorage("diary_name")) var diaryName = ""
         
         
         @Presents var destination: Destination.State?
     }
     
-    enum Action: Sendable {
+    enum Action {
         case didAppear
         case navigateToFeature
         case destination(PresentationAction<Destination.Action>)
@@ -55,25 +56,15 @@ struct DearDiary: Sendable {
                 return .none
             }
         }
-        .ifLet(\.$destination, action: \.destination) {
-            Destination()
+        .ifLet(\.$destination, action: \.destination)
+        .onChange(of: \.uid) { oldValue, newValue in
+            
         }
     }
     
     @Reducer
-    struct Destination: Sendable {
-        enum State: Sendable {
-            case auth(Account.State)
-            case diary(Diary.State)
-        }
-        
-        enum Action: Sendable {
-            case auth(Account.Action)
-            case diary(Diary.Action)
-        }
-        
-        var body: some ReducerOf<Self> {
-            EmptyReducer()
-        }
+    enum Destination {
+        case auth(Account)
+        case diary(Diary)
     }
 }

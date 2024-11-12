@@ -3,12 +3,11 @@ import ComposableArchitecture
 import Foundation
 import SwiftData
 
-
 @Reducer
-public struct Diary: Sendable {
+public struct Diary {
     public init() { }
     @ObservableState
-    public struct State: Sendable {
+    public struct State {
         @Shared(.appStorage("uid")) var uid = ""
         @Shared(.appStorage("diary_name")) var diaryName = ""
         var focusDate: YearMonthDay
@@ -33,7 +32,7 @@ public struct Diary: Sendable {
         }
     }
     
-    public enum Action: BindableAction, Sendable {
+    public enum Action: BindableAction {
         case didAppear
         case didTapEntryCard(Entry)
         case didTapSettingButton
@@ -56,18 +55,10 @@ public struct Diary: Sendable {
     }
     
     @Reducer
-    public struct Destination: Sendable {
-        public enum State: Sendable {
-            case setting(Setting.State)
-            case detail(Detail.State)
-            case memoir(Memoir.State)
-        }
-        
-        public enum Action: Sendable {
-            case setting(Setting.Action)
-            case detail(Detail.Action)
-            case memoir(Memoir.Action)
-        }
+    public enum Destination {
+        case setting(Setting)
+        case detail(Detail)
+        case memoir(Memoir)
     }
     
     @Dependency(\.dismiss) private var dismiss
@@ -148,9 +139,6 @@ public struct Diary: Sendable {
             default:
                 return .none
             }
-        }
-        .ifLet(\.$destination, action: \.destination) {
-            Destination()
         }
     }
 }

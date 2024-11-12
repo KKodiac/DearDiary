@@ -32,8 +32,7 @@ struct AppView: View {
                     action: \.destination.diary
                 )
             ) { store in
-//                DiaryView(store: store)
-//                    .navigationBarBackButtonHidden()
+                DiaryView(store: store)
             }
         }
     }

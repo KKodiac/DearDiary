@@ -1,4 +1,6 @@
 import ComposableArchitecture
+import Foundation
+import ExternalDependencies
 
 @Reducer
 public struct Setup: Sendable {
@@ -10,7 +12,7 @@ public struct Setup: Sendable {
         
         @Shared var name: String
         @Shared var personality: Personality
-        
+        @Shared(.appStorage("uid")) var uid = ""
         init(
             expanded: Bool = false,
             personalities: [Personality] = [],
@@ -19,8 +21,8 @@ public struct Setup: Sendable {
         ) {
             self.expanded = expanded
             self.personalities = personalities
-            self._name = Shared(name)
-            self._personality = Shared(personality)
+            self._name = Shared(wrappedValue: name, .appStorage("diary_name"))
+            self._personality = Shared(wrappedValue: personality, .appStorage("diary_personality"))
         }
     }
     
@@ -45,9 +47,22 @@ public struct Setup: Sendable {
     }
     
     public var body: some ReducerOf<Self> {
-        Reduce { state, action in
-            switch action {
-            default: return .none
+        BindingReducer(action: \.view)
+        
+        CombineReducers {
+            NestedAction(\.view) { state, action in
+                switch action {
+                case .didAppear:
+                    return .none
+                case .didTapPicker(let personality):
+                    state.personality = personality
+                    state.expanded.toggle()
+                    return .none
+                case .didTapGetStarted:
+                    return .send(.delegate(.navigateToDiary))
+                case .binding(_):
+                    return .none
+                }
             }
         }
     }

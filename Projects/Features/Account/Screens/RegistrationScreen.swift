@@ -66,7 +66,7 @@ struct RegistrationScreen: View {
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button {
-                // Add back action
+                send(.didTapNavigateToBack)
             } label: {
                 DesignSystemAsset.back.swiftUIImage.foregroundStyle(.black)
             }

@@ -32,6 +32,7 @@ public struct Result: Sendable {
         case binding(BindingAction<State>)
     }
     
+    
     @Dependency(\.dismiss) private var dismiss
     
     public var body: some ReducerOf<Self> {
@@ -47,7 +48,7 @@ public struct Result: Sendable {
                 return .none
                 
             case .didTapSaveButton:
-                guard let entry = state.entry else {
+                guard let _ = state.entry else {
                     return .none
                 }
                 return .run { send in

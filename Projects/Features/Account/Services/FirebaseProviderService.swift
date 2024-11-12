@@ -30,10 +30,13 @@ extension DependencyValues {
                 return try await authObject.signIn(with: credentials)
             },
             invalidateWithFirebaseAuth: {
+                let defaults: UserDefaults = .standard
                 let authObject = Firebase.Auth.auth()
                 try authObject.signOut()
+                defaults.set(false, forKey: "isFirebaseConfigured")
+                
             },
-            configureFirebaseWithOptions: {
+            configureFirebaseWithOptionsIfNotConfigured: {
                 guard let path = Bundle.main.path(
                     forResource: "Info", ofType: "plist"
                 ) else {
@@ -65,6 +68,15 @@ extension DependencyValues {
                 }
                 
                 return String(nonce)
+            },
+            clientID: {
+                guard let app = FirebaseApp.app() else {
+                    throw FirebaseProviderError.firebaseAppNotConfigured
+                }
+                guard let clientID = app.options.clientID else {
+                    throw FirebaseProviderError.firebaseInvalidClientID
+                }
+                return clientID
             }
         )
     }
@@ -74,13 +86,25 @@ struct FirebaseProviderService {
     var registerWithFirebaseAuthEmail: (
         EmailCredential
     ) async throws -> AuthDataResult
+    
     var authenticateWithFirebaseAuthEmail: (
         EmailCredential
     ) async throws -> AuthDataResult
+    
     var authenticateWithFirebaseAuthSocialProvider: (
         AuthCredential
     ) async throws -> AuthDataResult
+    
     var invalidateWithFirebaseAuth: () async throws -> Void
-    var configureFirebaseWithOptions: () -> Void
+    
+    var configureFirebaseWithOptionsIfNotConfigured: () -> Void
+    
     var makeRandomNonceString: () -> String
+    
+    var clientID: () throws -> String
+}
+
+enum FirebaseProviderError: Error {
+    case firebaseAppNotConfigured
+    case firebaseInvalidClientID
 }

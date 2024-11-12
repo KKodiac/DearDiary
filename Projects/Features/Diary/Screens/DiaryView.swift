@@ -6,6 +6,7 @@ import SwiftUI
 public struct DiaryView: View {
     @Bindable var store: StoreOf<Diary>
     @StateObject private var controller = CalendarController()
+    @Environment(\.colorScheme) private var colorScheme
     
     public init(store: StoreOf<Diary>) {
         self.store = store
@@ -28,6 +29,7 @@ public struct DiaryView: View {
             MemoirScreen(store: store)
                 .navigationBarBackButtonHidden()
         }
+        .navigationBarBackButtonHidden()
     }
     
     // MARK: - Main Content

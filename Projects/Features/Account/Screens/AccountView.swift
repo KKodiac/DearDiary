@@ -2,6 +2,7 @@ import ComposableArchitecture
 import DesignSystem
 import SwiftUI
 
+@ViewAction(for: Account.self)
 public struct AccountView: View {
     @Bindable public var store: StoreOf<Account>
     @Environment(\.authorizationController) private var controller
@@ -16,11 +17,11 @@ public struct AccountView: View {
             CircularButton(image: DesignSystemAsset.google) {
                 let firstScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
                 let viewController = firstScene?.windows.first?.rootViewController
-                store.send(.view(.didTapSignInWithGoogle(viewController)))
+                send(.didTapSignInWithGoogle(viewController))
             }
             
             CircularButton(image: DesignSystemAsset.apple) {
-                store.send(.view(.didTapSignInWithApple(controller)))
+                send(.didTapSignInWithApple(controller))
             }
         }
     }
@@ -31,7 +32,7 @@ public struct AccountView: View {
             PrimaryDivider()
             
             PrimaryButton(label: "Sign Up with Email") {
-                store.send(.view(.didTapSignUpWithEmail))
+                send(.didTapSignUpWithEmail)
             }
             .padding(.vertical)
         }
@@ -45,7 +46,7 @@ public struct AccountView: View {
                 .foregroundStyle(.secondary)
             
             Button {
-                store.send(.view(.didTapSignInWithEmail))
+                send(.didTapSignInWithEmail)
             } label: {
                 Text("Log In")
                     .font(
@@ -72,7 +73,7 @@ public struct AccountView: View {
                 .primaryHorizontalPadding()
             }
             .onOpenURL { url in
-                store.send(.view(.didReceiveOpenURL(url)))
+                send(.didReceiveOpenURL(url))
             }
             .navigationDestination(
                 item: $store.scope(

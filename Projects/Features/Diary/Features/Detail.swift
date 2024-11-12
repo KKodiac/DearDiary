@@ -42,7 +42,7 @@ public struct Detail: Sendable {
                 return .none
                 
             case .didTapSaveButton:
-                let entry = state.entry
+                let _ = state.entry
                 return .run { send in
                     await dismiss()
                 }

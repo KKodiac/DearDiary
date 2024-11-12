@@ -4,10 +4,10 @@ import OSLog
 import SwiftUI
 
 @Reducer
-public struct Memoir: Sendable {
+public struct Memoir {
     public init() {}
     @ObservableState
-    public struct State: Sendable {
+    public struct State {
         @Shared(.appStorage("diary_name")) var diaryName: String = "Diary"
         
         var memoirText: String = "Hi"
@@ -22,7 +22,7 @@ public struct Memoir: Sendable {
         @Presents var destination: Destination.State?
     }
     
-    public enum Action: BindableAction, Sendable {
+    public enum Action: BindableAction {
         case didAppear
         case didTapNavigateToBack
         
@@ -41,15 +41,8 @@ public struct Memoir: Sendable {
     }
     
     @Reducer
-    public struct Destination: Sendable {
-        @ObservableState
-        public enum State: Sendable {
-            case result(Result.State)
-        }
-        
-        public enum Action: Sendable {
-            case result(Result.Action)
-        }
+    public enum Destination {
+        case result(Result)
     }
     
     @Dependency(\.dismiss) var dismiss
@@ -129,9 +122,6 @@ public struct Memoir: Sendable {
             default:
                 return .none
             }
-        }
-        .ifLet(\.$destination, action: \.destination) {
-            Destination()
         }
     }
 }

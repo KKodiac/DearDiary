@@ -17,11 +17,7 @@ public struct Setting: Sendable {
     
     public var body: some ReducerOf<Self> {
         Reduce { state, action in
-            switch action {
-            default:
-                return .none
-            }
-            
+            return .none
         }
     }
 }
