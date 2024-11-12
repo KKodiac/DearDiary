@@ -23,7 +23,7 @@ Trying to decide how to integrate SwiftData with TCA
 
 - SwiftUI
 - SwiftData
-- The Composable Architecture (TCA)
+- The Composable Architecture (TCA) 1.15.2
 - Firebase Authentication
 - Google Sign-In
 - Apple Sign-In
