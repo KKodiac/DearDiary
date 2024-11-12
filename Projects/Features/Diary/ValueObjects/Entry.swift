@@ -6,20 +6,17 @@ public struct Entry: Identifiable, Equatable, Hashable, Sendable {
     public var title: String
     public var content: String
     public let createdAt: Date
-    public let createdDate: Date
     
     public init(
         id: UUID = UUID(),
         title: String,
         content: String,
-        createdAt: Date = .now,
-        createdDate: Date = Calendar.current.startOfDay(for: .now)
+        createdAt: Date = .now
     ) {
         self.id = id
         self.title = title
         self.content = content
         self.createdAt = createdAt
-        self.createdDate = createdDate
     }
     
     private func parse() -> Entry? {
@@ -47,8 +44,7 @@ extension Entry {
             id: self.id,
             title: self.title,
             content: self.content,
-            createdAt: self.createdAt,
-            createdDate: self.createdDate
+            createdAt: self.createdAt
         )
     }
 }
