@@ -38,6 +38,7 @@ let project = Project(
                     target: "Utility",
                     path: .relativeToRoot("Projects/Utility")
                 ),
+                .target(name: "Core")
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),
@@ -53,6 +54,26 @@ let project = Project(
                     target: "DesignSystem",
                     path: .relativeToRoot("Projects/DesignSystem")
                 ),
+                .project(
+                    target: "ExternalDependencies",
+                    path: .relativeToRoot("Projects/ExternalDependencies")
+                ),
+                .project(
+                    target: "Utility",
+                    path: .relativeToRoot("Projects/Utility")
+                ),
+                .target(name: "Core")
+            ],
+            settings: .settings(configurations: [.defaultDebug, .defaultRelease])
+        ),
+        .target(
+            name: "Core",
+            destinations: Project.Environment.destinations,
+            product: .staticLibrary,
+            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Core",
+            infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
+            sources: [.glob(.relativeToCurrentFile("Core/**"))],
+            dependencies: Project.Environment.dependecies + [
                 .project(
                     target: "ExternalDependencies",
                     path: .relativeToRoot("Projects/ExternalDependencies")
