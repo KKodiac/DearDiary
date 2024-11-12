@@ -9,5 +9,6 @@ let workspace = Workspace(
         .path("Projects/ExternalDependencies"),
         .path("Projects/Features"),
         .path("Projects/Utility")
-    ]
+    ],
+    generationOptions: .options(lastXcodeUpgradeCheck: .init(16, 1, 0))
 )
