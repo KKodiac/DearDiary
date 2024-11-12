@@ -5,8 +5,9 @@
 > 
 > **🧪 LEARNING PROJECT**: This is a testing/learning project built to explore The Composable Architecture (TCA) and modern iOS development practices.
 
-
 Dear Diary is an iOS application that serves as your personal AI-powered diary companion. Built with SwiftUI and The Composable Architecture (TCA).
+
+Trying to decide how to integrate SwiftData with TCA
 
 ## Features
 
@@ -21,12 +22,13 @@ Dear Diary is an iOS application that serves as your personal AI-powered diary c
 ## Tech Stack
 
 - SwiftUI
+- SwiftData
 - The Composable Architecture (TCA)
 - Firebase Authentication
 - Google Sign-In
 - Apple Sign-In
 - Tuist (Project Generation)
-- Moya (Networking)
+- ~~Moya (Networking)~~ Deciding whether to ease up on package dependency
 
 ## Project Structure 
 ```
