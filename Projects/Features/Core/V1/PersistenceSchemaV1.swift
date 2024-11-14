@@ -3,11 +3,12 @@ import SwiftData
 
 import ComposableArchitecture
 
-struct PersistenceSchemaV1: VersionedSchema {
-    static var models: [any PersistentModel.Type] = [
-        User.self,
-        Entry.self
+public struct PersistenceSchemaV1: VersionedSchema {
+    public static var models: [any PersistentModel.Type] = [
+        UserModel.self,
+        EntryModel.self,
+        DialogueModel.self,
     ]
 
-    static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 0)
+    public static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 0)
 }

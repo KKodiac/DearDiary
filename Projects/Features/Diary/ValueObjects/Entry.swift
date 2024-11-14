@@ -1,6 +1,8 @@
 import Foundation
 import SwiftData
 
+import Core
+
 public struct Entry: Identifiable, Equatable, Hashable, Sendable {
     public let id: UUID
     public var title: String
@@ -38,15 +40,8 @@ public struct Entry: Identifiable, Equatable, Hashable, Sendable {
     }
 }
 
-extension Entry {
-    internal func toDomain() -> Entry {
-        return parse() ?? .init(
-            id: self.id,
-            title: self.title,
-            content: self.content,
-            createdAt: self.createdAt
-        )
-    }
+extension Entry: ValueObject {
+    
 }
 
 extension Entry {

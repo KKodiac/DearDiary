@@ -3,13 +3,20 @@ import SwiftData
 
 extension PersistenceSchemaV1 {
     @Model
-    final class Entry {
-        var id: UUID
-        var title: String
-        var content: String
-        var createdAt: Date
+    public final class EntryModel {
+        @Attribute(.unique)
+        public var id: UUID
         
-        init(id: UUID, title: String, content: String, createdAt: Date) {
+        public var title: String
+        public var content: String
+        public var createdAt: Date
+        
+        internal init(
+            id: UUID = .init(),
+            title: String,
+            content: String,
+            createdAt: Date
+        ) {
             self.id = id
             self.title = title
             self.content = content

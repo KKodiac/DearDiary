@@ -3,13 +3,15 @@ import SwiftData
 
 extension PersistenceSchemaV1 {
     @Model
-    final class Dialogue {
-        @Attribute(.unique) var id: UUID
-        var content: String
-        var createAt: String
-        var role: Role
+    public final class DialogueModel {
+        @Attribute(.unique)
+        public var id: UUID
         
-        init(id: UUID, content: String, createAt: String, role: Role) {
+        public var content: String
+        public var createAt: String
+        public var role: Role
+        
+        internal init(id: UUID, content: String, createAt: String, role: Role) {
             self.id = id
             self.content = content
             self.createAt = createAt
@@ -17,7 +19,7 @@ extension PersistenceSchemaV1 {
         }
     }
     
-    enum Role: String, Codable {
+    public enum Role: String, Codable {
         case user
         case assistant
     }
