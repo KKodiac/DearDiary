@@ -3,7 +3,6 @@ import DependencyPlugin
 
 let project = Project(
     name: "DearDiary",
-    packages: Project.Environment.packages,
     targets: [
         .target(
             name: "DearDiary",
@@ -15,12 +14,28 @@ let project = Project(
             entitlements: .dictionary([
                 "com.apple.developer.applesignin": .array(["Default"])
             ]),
-            dependencies: Project.Environment.dependecies + [
+            dependencies: [
                 .project(
                     target: "Features",
                     path: .relativeToRoot("Projects/Features"),
                     condition: .when([.ios])
-                )
+                ),
+                .project(
+                    target: "DesignSystem",
+                    path: .relativeToRoot("Projects/DesignSystem")
+                ),
+                .project(
+                    target: "InternalDependencies",
+                    path: .relativeToRoot("Projects/Dependencies")
+                ),
+                .project(
+                    target: "ExternalDependencies",
+                    path: .relativeToRoot("Projects/ExternalDependencies")
+                ),
+                .project(
+                    target: "Utility",
+                    path: .relativeToRoot("Projects/Utility")
+                ),
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),

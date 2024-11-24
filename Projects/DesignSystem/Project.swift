@@ -13,6 +13,9 @@ let project = Project(
             infoPlist: .default,
             sources: ["Sources/**"],
             resources: ["Resources/**"],
+            dependencies: [
+                .external(name: "SwiftUICalendar", condition: .when(.all))
+            ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),
     ],

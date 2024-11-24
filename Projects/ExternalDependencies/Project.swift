@@ -3,7 +3,6 @@ import DependencyPlugin
 
 let project = Project(
     name: "ExternalDependencies",
-    packages: Project.Environment.packages,
     targets: [
         .target(
             name: "ExternalDependencies",
@@ -15,12 +14,30 @@ let project = Project(
             sources: ["Sources/**"],
             resources: [],
             dependencies: [
-                .package(product: "ComposableArchitecture", type: .runtime),
-                .package(product: "Moya", type: .runtime),
-                .package(product: "FirebaseAuth", type: .runtime),
-                .package(product: "SwiftUICalendar", type: .runtime),
-                .package(product: "GoogleSignIn", type: .runtime),
-                .package(product: "GoogleSignInSwift", type: .runtime)
+                .external(
+                    name: "ComposableArchitecture",
+                    condition: .when([.ios, .macos])
+                ),
+                .external(
+                    name: "Moya",
+                    condition: .when([.ios, .macos])
+                ),
+                .external(
+                    name: "FirebaseAuth",
+                    condition: .when([.ios, .macos])
+                ),
+                .external(
+                    name: "SwiftUICalendar",
+                    condition: .when([.ios, .macos])
+                ),
+                .external(
+                    name: "GoogleSignIn",
+                    condition: .when([.ios, .macos])
+                ),
+                .external(
+                    name: "GoogleSignInSwift",
+                    condition: .when([.ios, .macos])
+                )
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),

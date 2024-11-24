@@ -12,10 +12,27 @@ let packageSettings = PackageSettings(
 #endif
 
 let package = Package(
-    name: "DearDiary",
+    name: "ExternalDependencies",
     dependencies: [
-        // Add your own dependencies here:
-        // .package(url: "https://github.com/Alamofire/Alamofire", from: "5.0.0"),
-        // You can read more about dependencies here: https://docs.tuist.io/documentation/tuist/dependencies
+        .package(
+            url: "https://github.com/pointfreeco/swift-composable-architecture.git",
+            exact: Version(stringLiteral: "1.15.2")
+        ),
+        .package(
+            url: "https://github.com/Moya/Moya.git",
+            exact: Version(stringLiteral: "15.0.3")
+        ),
+        .package(
+            url: "https://github.com/GGJJack/SwiftUICalendar",
+            exact: Version(stringLiteral: "0.1.13")
+        ),
+        .package(
+            url: "https://github.com/firebase/firebase-ios-sdk",
+            exact: Version(stringLiteral: "10.20.0")
+        ),
+        .package(
+            url: "https://github.com/google/GoogleSignIn-iOS",
+            exact: Version(stringLiteral: "7.0.0")
+        ),
     ]
 )

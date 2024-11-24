@@ -1,10 +1,10 @@
 import ComposableArchitecture
 
 @Reducer
-public struct Detail: Sendable {
+public struct Detail {
     public init() { }
     @ObservableState
-    public struct State: Sendable {
+    public struct State {
         var entry: Entry
         var editable: Bool
         public init(
@@ -16,7 +16,7 @@ public struct Detail: Sendable {
         }
     }
     
-    public enum Action: Sendable, BindableAction {
+    public enum Action: BindableAction {
         case didTapBackButton
         
         case didTapSaveButton
