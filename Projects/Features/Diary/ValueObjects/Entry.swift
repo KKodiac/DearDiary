@@ -1,8 +1,6 @@
 import Foundation
 import SwiftData
 
-import Core
-
 public struct Entry: Identifiable, Equatable, Hashable, Sendable {
     public let id: UUID
     public var title: String
@@ -38,10 +36,6 @@ public struct Entry: Identifiable, Equatable, Hashable, Sendable {
         
         return .init(title: title, content: content)
     }
-}
-
-extension Entry: ValueObject {
-    
 }
 
 extension Entry {

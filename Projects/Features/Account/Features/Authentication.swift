@@ -1,5 +1,4 @@
 import AuthenticationServices
-import FirebaseAuth
 import ExternalDependencies
 import SwiftUI
 
@@ -66,8 +65,7 @@ public struct Authentication {
     }
     
     @Dependency(\.dismiss) private var dismiss
-    @Dependency(\.google) private var google
-    @Dependency(\.firebase) private var firebase
+    
     
     public var body: some ReducerOf<Self> {
         BindingReducer(action: \.view)
@@ -98,16 +96,8 @@ public struct Authentication {
                     )
                     
                 case .didTapSignInWithEmail:
-                    let credential = EmailCredential(
-                        email: state.email,
-                        password: state.password
-                    )
                     return .run { send in
-                        let result = try await firebase
-                            .authenticateWithFirebaseAuthEmail(
-                                credential
-                            )
-                        await send(.internal(.didSucceedSignIn(result.user.uid)))
+                   
                     } catch: { _, send in
                         await send(.internal(.didFailFeatureAction(.authenticationAttemptDidNotSucceed)))
                     }

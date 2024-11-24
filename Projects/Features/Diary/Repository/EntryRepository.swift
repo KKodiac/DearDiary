@@ -1,4 +1,5 @@
 import Foundation
+import Persistence
 
 protocol EntryCommandRepository {
     func create(title: String, content: String, createdAt: Date) async throws

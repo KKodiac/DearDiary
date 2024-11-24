@@ -1,5 +1,6 @@
 import AuthenticationServices
 import ExternalDependencies
+import Auth
 import Foundation
 import SwiftUI
 
@@ -16,7 +17,7 @@ public struct Account {
         public init() { }
     }
     
-    public enum Action: ViewAction, BindableAction {
+    public enum Action: ViewAction {
         case destination(PresentationAction<Destination.Action>)
         
         case view(ViewActions)
@@ -24,21 +25,21 @@ public struct Account {
         case `internal`(InternalActions)
         
         
-        case binding(BindingAction<State>)
-        
-        public enum ViewActions: Sendable {
+        public enum ViewActions: BindableAction {
             case didReceiveOpenURL(URL)
             case didTapSignInWithGoogle(UIViewController?)
             case didTapSignInWithApple(AuthorizationController)
             case didTapSignInWithEmail
             case didTapSignUpWithEmail
+            
+            case binding(BindingAction<State>)
         }
         
-        public enum DelegateActions: Sendable {
+        public enum DelegateActions {
             case navigateToDiary
         }
         
-        public enum InternalActions: Sendable {
+        public enum InternalActions {
             case didSucceedSignIn(String)
             
             case didRequestSignInScreen
@@ -61,28 +62,34 @@ public struct Account {
     }
     
     @Dependency(\.defaultAppStorage) private var appStorage
-    @Dependency(\.google) private var google
-    @Dependency(\.firebase) private var firebase
+    @Dependency(\.authClient.firebase) private var firebase
+    @Dependency(\.authClient.apple) private var apple
+    @Dependency(\.authClient.google) private var google
+    
     
     public var body: some ReducerOf<Self> {
-        BindingReducer()
+        BindingReducer(action: \.view)
         
         CombineReducers {
             NestedAction(\.view) { state, action in
                 switch action {
                 case .didReceiveOpenURL(let url):
-                    google.handle(url)
                     return .none
                     
                 case .didTapSignInWithGoogle(let viewController):
-                    return .send(
-                        .internal(.didRequestGoogleSignIn(viewController))
-                    )
+                    return .run { send in
+                        guard let clientID = firebase.clientID else {
+                            return
+                        }
+                        let auth = try await google.login(clientID)
+                        let result = try await firebase.signIn(auth)
+                    }
                     
                 case .didTapSignInWithApple(let controller):
-                    return .send(
-                        .internal(.didRequestAppleSignIn(controller))
-                    )
+                    return .run { send in
+                        let auth = try await apple.login()
+                        let result = try await firebase.signIn(auth)
+                    }
                     
                 case .didTapSignInWithEmail:
                     return .send(
@@ -93,6 +100,9 @@ public struct Account {
                     return .send(
                         .internal(.didRequestSignUpScreen)
                     )
+                    
+                case .binding:
+                    return .none
                 }
             }
             
@@ -123,51 +133,13 @@ public struct Account {
                     return .none
                     
                 case .didRequestGoogleSignIn(let viewController):
-                    guard let viewController else { return
-                        .send(.internal(
-                            .didFailFeatureAction(.authenticationAttemptDidNotSucceed)
-                        ))
-                    }
-                    firebase.configureFirebaseWithOptionsIfNotConfigured()
-                    return .run { send in
-                        google.configuration = GIDConfiguration(
-                            clientID: try firebase.clientID()
-                        )
-                        let result = try await google.signIn(withPresenting: viewController)
-                        let token = try ResultToken(user: result.user)
-                        let credential = GoogleAuthProvider.credential(
-                            withIDToken: token.idToken,
-                            accessToken: token.accessToken
-                        )
-                        let success = try await firebase
-                            .authenticateWithFirebaseAuthSocialProvider(
-                                credential
-                            )
-                        await send(.internal(.didSucceedSignIn(success.user.uid)))
+                    return .run { _ in
                     } catch: { _, send in
                         await send(.internal(.didFailFeatureAction(.authenticationAttemptDidNotSucceed)))
                     }
                 case .didRequestAppleSignIn(let controller):
                     return .run { send in
-                        let provider = ASAuthorizationAppleIDProvider()
-                        async let request = provider.createRequest()
-                        await request.requestedScopes = [.email, .fullName]
-                        let result = try await controller.performRequest(request)
-                        if case let .appleID(credential) = result {
-                            if let token = credential.identityToken,
-                               let tokenString = String(data: token,encoding: .utf8) {
-                                let credential = OAuthProvider.appleCredential(
-                                    withIDToken: tokenString,
-                                    rawNonce: firebase.makeRandomNonceString(),
-                                    fullName: credential.fullName
-                                )
-                                let result = try await firebase
-                                    .authenticateWithFirebaseAuthSocialProvider(
-                                        credential
-                                    )
-                                await send(.internal(.didSucceedSignIn(result.user.uid)))
-                            }
-                        }
+                        
                     } catch: { _, send in
                         await send(.internal(.didFailFeatureAction(.authenticationAttemptDidNotSucceed)))
                     }

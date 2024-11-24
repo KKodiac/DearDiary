@@ -63,7 +63,6 @@ public struct Registration: Sendable {
     }
     
     @Dependency(\.dismiss) private var dismiss
-    @Dependency(\.firebase) private var firebase
     
     public var body: some ReducerOf<Self> {
         BindingReducer(action: \.view)
@@ -85,15 +84,8 @@ public struct Registration: Sendable {
             NestedAction(\.internal) { state, action in
                 switch action {
                 case .didRequestEmailSignUp:
-                    let credential = EmailCredential(
-                        email: state.email,
-                        password: state.password
-                    )
                     return .run { send in
-                        let result = try await firebase
-                            .registerWithFirebaseAuthEmail(
-                                credential
-                            )
+                      
                     }
                 case .didSucceedSignUp(let userId):
                     state.uid = userId

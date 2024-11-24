@@ -1,6 +1,6 @@
 import Foundation
 import SwiftData
-
+import Persistence
 import ComposableArchitecture
 
 @ModelActor
@@ -56,8 +56,4 @@ final actor EntryModelRepository: EntryRepository {
             modelContext.insert(entry)
         }
     }
-    
-    // MARK: - Private Properties
-    private let modelContext: ModelContext
-    private let transformer: ValueTransformer
 }
