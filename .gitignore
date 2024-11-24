@@ -72,3 +72,4 @@ Tuist/.build
 # Secrets file
 Tuist/Plugins/DependencyPlugin/ProjectDescriptionHelpers/Project+Secrets.swift
 .package.resolved
+*.resolved
