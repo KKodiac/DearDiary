@@ -19,6 +19,17 @@ Trying to decide how to integrate SwiftData with TCA
 - 💭 Personalized diary interactions
 - 🎨 Clean and modern UI design
 
+## Dependencies
+
+Install external 3rd-party dependencies with Tuist and cache them.
+Allows for quicker build times. (~50s to ~8s for initial builds)
+
+```sh
+tuist install
+...
+tuist cache
+```
+
 ## Tech Stack
 
 - SwiftUI
