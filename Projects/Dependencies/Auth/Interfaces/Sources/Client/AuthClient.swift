@@ -1,5 +1,5 @@
 import Foundation
-import ComposableArchitecture
+import Dependencies
 
 public struct AuthClient {
     public let firebase: FirebaseAuthServiceInterface
