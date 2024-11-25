@@ -7,6 +7,13 @@ extension PersistenceSchemaV1 {
         @Attribute(.unique)
         public var id: UUID
         
+        // MARK: - One-to-Many Relationship with EntryModel
+        @Relationship(
+            deleteRule: .cascade,
+            inverse: \EntryModel.user
+        )
+        public var entry = [EntryModel]()
+        
         public var name: String
         public var email: String
         public var password: String?

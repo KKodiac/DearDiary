@@ -1,6 +1,5 @@
 import Foundation
 import SwiftData
-import Persistence
 import ComposableArchitecture
 
 @ModelActor
@@ -28,13 +27,17 @@ final actor EntryModelRepository: EntryRepository {
     public func create(
         title: String,
         content: String,
-        createdAt: Date = .now
+        createdAt: Date = .now,
+        user: UserModel?,
+        dialogues: [DialogueModel]
     ) async throws {
         try modelContext.transaction {
             let entry = EntryModel(
                 title: title,
                 content: content,
-                createdAt: createdAt
+                createdAt: createdAt,
+                user: user,
+                dialogues: dialogues
             )
             modelContext.insert(entry)
         }

@@ -11,6 +11,9 @@ extension PersistenceSchemaV1 {
         public var createAt: String
         public var role: Role
         
+        // MARK: - Many-to-One Relationship with EntryModel
+        public var entry: EntryModel?
+        
         public init(
             id: UUID = UUID(),
             content: String,

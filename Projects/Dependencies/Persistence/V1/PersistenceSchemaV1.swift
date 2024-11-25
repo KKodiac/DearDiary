@@ -10,5 +10,5 @@ public struct PersistenceSchemaV1: VersionedSchema {
         DialogueModel.self,
     ]
 
-    public static var versionIdentifier: Schema.Version = Schema.Version(1, 0, 0)
+    public static var versionIdentifier = Schema.Version(1, 0, 0)
 }
