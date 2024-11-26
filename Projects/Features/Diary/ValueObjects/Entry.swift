@@ -66,3 +66,5 @@ extension Entry {
         )
     ]
 }
+
+extension Entry: ValueMappable { }

@@ -22,3 +22,5 @@ extension Dialogue {
         .init(content: "I see. You have been feeling heavy since this morning and have experienced something unpleasant. Anything good happen today?", createdAt: Date.now.addingTimeInterval(10000), role: .assistant)
     ]
 }
+
+extension Dialogue: ValueMappable { }
