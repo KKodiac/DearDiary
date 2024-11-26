@@ -1,5 +1,7 @@
 import Foundation
 
+import Persistence
+
 public struct Dialogue: Identifiable, Equatable, Sendable {
     public var id: UUID
     public var content: String

@@ -8,7 +8,7 @@ extension PersistenceSchemaV1 {
         public var id: UUID
         
         public var content: String
-        public var createAt: String
+        public var createAt: Date
         public var role: Role
         
         // MARK: - Many-to-One Relationship with EntryModel
@@ -17,7 +17,7 @@ extension PersistenceSchemaV1 {
         public init(
             id: UUID = UUID(),
             content: String,
-            createAt: String,
+            createAt: Date,
             role: Role
         ) {
             self.id = id
@@ -27,7 +27,7 @@ extension PersistenceSchemaV1 {
         }
     }
     
-    public enum Role: String, Codable {
+    public enum Role: String, Codable, Sendable {
         case user
         case assistant
     }
