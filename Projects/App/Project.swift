@@ -3,12 +3,13 @@ import DependencyPlugin
 
 let project = Project(
     name: "DearDiary",
+    organizationName: "BibumTiger",
     targets: [
         .target(
             name: "DearDiary",
             destinations: Project.Environment.destinations,
             product: .app,
-            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).DearDiary",
+            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).App",
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: ["Sources/**"],
             entitlements: .dictionary([

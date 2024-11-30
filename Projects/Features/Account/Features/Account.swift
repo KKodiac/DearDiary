@@ -26,6 +26,7 @@ public struct Account {
         
         
         public enum ViewActions: BindableAction {
+            case didAppear
             case didReceiveOpenURL(URL)
             case didTapSignInWithGoogle(UIViewController?)
             case didTapSignInWithApple(AuthorizationController)
@@ -73,15 +74,26 @@ public struct Account {
         CombineReducers {
             NestedAction(\.view) { state, action in
                 switch action {
-                case .didReceiveOpenURL(let url):
+                case .didAppear:
+                    return .run(priority: .userInitiated) { @MainActor send in
+                        try firebase.configure()
+                    } catch: { error, send in
+                        
+                    }
+                case .didReceiveOpenURL(_):
                     return .none
                     
                 case .didTapSignInWithGoogle(let viewController):
                     return .run { send in
-                        guard let clientID = firebase.clientID else {
+                        guard let clientID = firebase.clientID,
+                              let viewController = viewController
+                        else {
                             return
                         }
-                        let auth = try await google.login(clientID)
+                        let auth = try await google.login(
+                            clientID,
+                            vc: viewController
+                        )
                         let result = try await firebase.signIn(auth)
                     }
                     

@@ -1,5 +1,6 @@
 import AuthenticationServices
 import ExternalDependencies
+import InternalDependencies
 import SwiftUI
 
 import OSLog
@@ -65,7 +66,7 @@ public struct Authentication {
     }
     
     @Dependency(\.dismiss) private var dismiss
-    
+    @Dependency(\.authClient.apple) private var appleAuthClient
     
     public var body: some ReducerOf<Self> {
         BindingReducer(action: \.view)
@@ -86,9 +87,12 @@ public struct Authentication {
             NestedAction(\.view) { state, action in
                 switch action {
                 case .didTapSignInWithApple(let controller):
-                    return .send(
-                        .delegate(.didRequestAppleSignIn(controller))
-                    )
+                    return .run { send in
+                        let credential = try await appleAuthClient.login()
+                        
+                    } catch: { error, send in
+                        
+                    }
                     
                 case .didTapSignInWithGoogle(let viewController):
                     return .send(

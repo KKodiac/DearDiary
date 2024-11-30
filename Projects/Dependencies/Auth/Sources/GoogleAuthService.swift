@@ -1,17 +1,13 @@
 import Firebase
+import FirebaseAuth
 import GoogleSignIn
 import GoogleSignInSwift
 
 extension GoogleAuthService: GoogleAuthServiceInterface {
-    public func login(_ clientID: String) async throws -> AuthCredential {
-        guard let controller = await (
-            UIApplication.shared.connectedScenes.first as? UIWindowScene
-        )?.windows.first?.rootViewController else {
-            throw GoogleAuthError.googleViewControllerNotFound
-        }
+    public func login(_ clientID: String, vc viewController: UIViewController) async throws -> AuthCredential {
         let provider = GIDSignIn.sharedInstance
         provider.configuration = GIDConfiguration(clientID: clientID)
-        let result = try await provider.signIn(withPresenting: controller)
+        let result = try await provider.signIn(withPresenting: viewController)
         guard let token = result.user.idToken else {
             throw GoogleAuthError.invalidIDToken
         }

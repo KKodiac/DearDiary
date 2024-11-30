@@ -6,8 +6,9 @@ extension FirebaseAuthService: FirebaseAuthServiceInterface {
         FirebaseApp.app()?.options.clientID
     }
     
-    func configure() async throws {
-        guard FirebaseApp.app() != nil else {
+    @MainActor
+    func configure() throws {
+        guard FirebaseApp.app() == nil else {
             throw FirebaseAuthError.firebaseAppIsAlreadyConfigured
         }
         

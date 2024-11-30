@@ -102,6 +102,9 @@ public struct AccountView: View {
                 SetupScreen(store: store)
                     .navigationBarBackButtonHidden()
             }
+            .onAppear {
+                send(.didAppear)
+            }
         }
     }
 }

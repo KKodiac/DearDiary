@@ -3,7 +3,7 @@ import FirebaseCore
 public protocol FirebaseAuthServiceInterface {
     var clientID: String? { get }
     
-    func configure() async throws
+    @MainActor func configure() throws
     func signIn(_: AuthCredential) async throws -> AuthDataResult
     func signOut() async throws
 }

@@ -5,18 +5,21 @@ public extension Configuration {
     static var defaultDebug: Self {
         .debug(name: "Debug", settings: [
             Project.SwiftVersion.declaration: Project.SwiftVersion.value(for: .debug),
+            Project.OtherLinkerFlag.declaration: Project.OtherLinkerFlag.value(for: .debug),
         ])
     }
     
     static var defaultRelease: Self {
         .release(name: "Release", settings: [
             Project.SwiftVersion.declaration: Project.SwiftVersion.value(for: .release),
+            Project.OtherLinkerFlag.declaration: Project.OtherLinkerFlag.value(for: .release),
         ])
     }
     
     static var defaultTest: Self {
         .debug(name: "Test", settings: [
             Project.SwiftVersion.declaration: Project.SwiftVersion.value(for: .test),
+            Project.OtherLinkerFlag.declaration: Project.OtherLinkerFlag.value(for: .test),
         ])
     }
 }
@@ -31,6 +34,21 @@ extension Project {
         case debug
         case release
         case test
+    }
+    
+    fileprivate struct OtherLinkerFlag: ProjectSettings {
+        static let declaration: String = "OTHER_LDFLAGS"
+        
+        static func value(for settings: Project.Configuration) -> ProjectDescription.SettingValue {
+            switch settings {
+            case .debug:
+                return "-ObjC"
+            case .release:
+                return "-ObjC"
+            case .test:
+                return "-ObjC"
+            }
+        }
     }
     
     fileprivate struct SwiftVersion: ProjectSettings {
