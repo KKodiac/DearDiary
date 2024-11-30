@@ -4,6 +4,7 @@ import GoogleSignIn
 import GoogleSignInSwift
 
 extension GoogleAuthService: GoogleAuthServiceInterface {
+    @MainActor
     public func login(_ clientID: String, vc viewController: UIViewController) async throws -> AuthCredential {
         let provider = GIDSignIn.sharedInstance
         provider.configuration = GIDConfiguration(clientID: clientID)
@@ -19,6 +20,7 @@ extension GoogleAuthService: GoogleAuthServiceInterface {
         return credential
     }
     
+    @MainActor
     public func logout() async throws {
         GIDSignIn.sharedInstance.signOut()
     }

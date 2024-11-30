@@ -84,7 +84,7 @@ public struct Account {
                     return .none
                     
                 case .didTapSignInWithGoogle(let viewController):
-                    return .run { send in
+                    return .run(priority: .userInitiated) { @MainActor send in
                         guard let clientID = firebase.clientID,
                               let viewController = viewController
                         else {
@@ -98,7 +98,7 @@ public struct Account {
                     }
                     
                 case .didTapSignInWithApple(let controller):
-                    return .run { send in
+                    return .run(priority: .userInitiated) { @MainActor send in
                         let auth = try await apple.login()
                         let result = try await firebase.signIn(auth)
                     }
