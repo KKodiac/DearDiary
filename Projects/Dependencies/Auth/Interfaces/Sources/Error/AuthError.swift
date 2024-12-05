@@ -1,11 +1,13 @@
 import Foundation
 
-enum AuthError: LocalizedError, Equatable {
+public enum AuthError: LocalizedError, Equatable {
     public static func == (lhs: AuthError, rhs: AuthError) -> Bool {
         return lhs.localizedDescription == rhs.localizedDescription
     }
     
     case appleAuthError(AppleAuthError)
+    case firebaseAuthError(FirebaseAuthError)
+    case googleAuthError(GoogleAuthError)
     case unExpectedError(Error)
     
     public var errorCode: String? {
@@ -17,8 +19,14 @@ enum AuthError: LocalizedError, Equatable {
     
     public var errorMessage: String {
         switch self {
-        case .appleAuthError(let appleAuthError):
+        case let .appleAuthError(appleAuthError):
             return appleAuthError.errorMessage
+            
+        case let .firebaseAuthError(firebaseAuthError):
+            return firebaseAuthError.errorMessage
+            
+        case let .googleAuthError(googleAuthError):
+            return googleAuthError.errorMessage
             
         case .unExpectedError(let error):
             return "unknown authError: \(error.localizedDescription)"
@@ -36,6 +44,12 @@ enum AuthError: LocalizedError, Equatable {
         switch error {
         case let error as AppleAuthError:
             self = AuthError.appleAuthError(error)
+            
+        case let error as FirebaseAuthError:
+            self = AuthError.firebaseAuthError(error)
+        
+        case let error as GoogleAuthError:
+            self = AuthError.googleAuthError(error)
             
         default:
             self = AuthError.unExpectedError(error)

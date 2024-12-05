@@ -15,13 +15,11 @@ public struct AccountView: View {
     public var socialSection: some View {
         HStack(spacing: 25) {
             CircularButton(image: DesignSystemAsset.google) {
-                let firstScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-                let viewController = firstScene?.windows.first?.rootViewController
-                send(.didTapSignInWithGoogle(viewController))
+                send(.didTapSignInWithGoogle)
             }
             
             CircularButton(image: DesignSystemAsset.apple) {
-                send(.didTapSignInWithApple(controller))
+                send(.didTapSignInWithApple)
             }
         }
     }

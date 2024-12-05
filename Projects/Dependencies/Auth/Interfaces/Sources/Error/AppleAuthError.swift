@@ -1,6 +1,6 @@
 import Foundation
 
-enum AppleAuthError: LocalizedError {
+public enum AppleAuthError: LocalizedError {
     case unknown
     case canceled
     case invalidResponse
@@ -24,7 +24,7 @@ enum AppleAuthError: LocalizedError {
     }
     
     public var errorMessage: String {
-        return errorDescription ?? "unknown appleOAuthError: \(self.localizedDescription)"
+        return errorDescription ?? "unknown apple auth error: \(self.localizedDescription)"
     }
     
     public init(error: Error) {

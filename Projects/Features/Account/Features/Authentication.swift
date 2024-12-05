@@ -8,39 +8,43 @@ import OSLog
 @Reducer
 public struct Authentication {
     public init() { }
+    
     @ObservableState
     public struct State {
-        @Shared(.appStorage("uid")) var uid: String = ""
+        var signIn: SignIn.State
+        
         @Shared var user: String
+        
         var email: String
         var password: String
         
-        var error: FeatureError?
         var isPresented: Bool
         
         init(
             user: String = "",
             email: String = "",
             password: String = "",
-            error: Authentication.FeatureError? = nil,
-            isPresented: Bool = false
+            isPresented: Bool = false,
+            clientUID: Shared<String>
         ) {
             self._user = Shared(user)
             self.email = email
             self.password = password
-            self.error = error
             self.isPresented = isPresented
+            self.signIn = SignIn.State(clientUID: clientUID)
         }
     }
     
-    public enum Action: Sendable, ViewAction {
+    public enum Action: ViewAction, Sendable {
+        
+        
         case view(_ViewAction)
         case delegate(DelegateAction)
         case `internal`(InternalAction)
         
         public enum _ViewAction: BindableAction, Sendable {
-            case didTapSignInWithApple(AuthorizationController)
-            case didTapSignInWithGoogle(UIViewController?)
+            case didTapSignInWithApple
+            case didTapSignInWithGoogle
             case didTapSignInWithEmail
             
             
@@ -51,61 +55,37 @@ public struct Authentication {
         }
         
         public enum DelegateAction: Sendable {
-            case didRequestGoogleSignIn(UIViewController?)
-            case didRequestAppleSignIn(AuthorizationController)
-            
             case navigateToSetUp
             case navigateToDiary
             case navigateToSignUp
         }
         
         public enum InternalAction: Sendable {
-            case didSucceedSignIn(String)
-            case didFailFeatureAction(Authentication.FeatureError)
+            case signIn(SignIn.Action)
         }
     }
     
     @Dependency(\.dismiss) private var dismiss
-    @Dependency(\.authClient.apple) private var appleAuthClient
+    @Dependency(\.authClient) private var authClient
     
     public var body: some ReducerOf<Self> {
         BindingReducer(action: \.view)
         
         CombineReducers {
-            NestedAction(\.internal) { state, action in
-                switch action {
-                case .didSucceedSignIn(let userId):
-                    state.uid = userId
-                    return .none
-                    
-                case .didFailFeatureAction(let error):
-                    state.error = error
-                    return .none
-                }
-            }
-            
             NestedAction(\.view) { state, action in
                 switch action {
-                case .didTapSignInWithApple(let controller):
-                    return .run { send in
-                        let credential = try await appleAuthClient.login()
-                        
-                    } catch: { error, send in
-                        
-                    }
+                case .didTapSignInWithApple:
+                    return SignIn()
+                        .signInWithApple(state: &state.signIn)
+                        .map { Action.internal(.signIn($0)) }
                     
-                case .didTapSignInWithGoogle(let viewController):
-                    return .send(
-                        .delegate(.didRequestGoogleSignIn(viewController))
-                    )
+                case .didTapSignInWithGoogle:
+                    return SignIn()
+                        .signInWithGoogle(state: &state.signIn)
+                        .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithEmail:
-                    return .run { send in
-                   
-                    } catch: { _, send in
-                        await send(.internal(.didFailFeatureAction(.authenticationAttemptDidNotSucceed)))
-                    }
-                    
+                    return .none
                     
                 case .didTapNavigateToBack:
                     return .run { send in
@@ -119,13 +99,70 @@ public struct Authentication {
                     return .none
                 }
             }
-            
         }
     }
 }
 
-public extension Authentication {
-    enum FeatureError: LocalizedError {
-        case authenticationAttemptDidNotSucceed
+@Reducer
+public struct SignIn: Sendable {
+    private let logger = Logger(
+        subsystem: "com.bibumtiger.deardiary",
+        category: "SignIn"
+    )
+    
+    @Dependency(\.authClient) private var authClient
+    
+    public struct State {
+        @Shared var isInitialUser: Bool
+        @Shared var clientUID: String
+        
+        public init(
+            isInitialUser: @autoclosure () -> Bool = true,
+            clientUID: Shared<String>
+        ) {
+            self._isInitialUser = Shared(
+                wrappedValue: isInitialUser(),
+                .appStorage("is_initial_user")
+            )
+            self._clientUID = clientUID
+        }
+    }
+    
+    public enum Action : Sendable {
+        case delegate(DelegateAction)
+        
+        public enum DelegateAction: Sendable {
+            case navigateToDiary
+            case navigateToSetup
+            case didThrowError(FeatureError)
+        }
+    }
+}
+
+extension SignIn {
+    func signInWithApple(state: inout State) -> Effect<Action> {
+        return .run { [state] send in
+            let clientUID = try await authClient.signInWithApple()
+            logger.log("Client UID: \(clientUID)")
+            await state.$clientUID.withLock { $0 = clientUID }
+        } catch: { error, send in
+            logger.error("Error: \(error)")
+        }
+    }
+    
+    func signInWithGoogle(state: inout State) -> Effect<Action> {
+        return .run { [state] send in
+            let clientUID = try await authClient.signInWithGoogle()
+            logger.log("Client UID: \(clientUID)")
+            await state.$clientUID.withLock { $0 = clientUID }
+        } catch: { error, send in
+            logger.error("Error: \(error)")
+        }
+    }
+}
+
+extension SignIn {
+    public enum FeatureError: LocalizedError {
+        case authClientError(AuthError)
     }
 }

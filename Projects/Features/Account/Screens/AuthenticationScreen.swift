@@ -1,4 +1,3 @@
-import AuthenticationServices
 import ComposableArchitecture
 import DesignSystem
 import SwiftUI
@@ -6,7 +5,6 @@ import SwiftUI
 @ViewAction(for: Authentication.self)
 struct AuthenticationScreen: View {
     @Bindable var store: StoreOf<Authentication>
-    @Environment(\.authorizationController) private var controller
     
     public var body: some View {
         ZStack {
@@ -24,28 +22,29 @@ struct AuthenticationScreen: View {
             .primaryHorizontalPadding()
         }
         .toolbar { toolbarContent }
-        .alert(isPresented: $store.isPresented, error: store.error) { errorAlert }
+//        .alert(isPresented: $store.isPresented, error: "") { errorAlert }
     }
     
+    @ViewBuilder
     private var welcomeSection: some View {
         Text("Welcome Back")
             .secondaryTextStyle()
             .padding(.bottom, Layout.Padding.bottom)
     }
     
+    @ViewBuilder
     private var socialLoginButtons: some View {
         HStack(spacing: Layout.Spacing.extraLarge) {
             CircularButton(image: DesignSystemAsset.google) {
-                let firstScene = UIApplication.shared.connectedScenes.first as? UIWindowScene
-                let viewController = firstScene?.windows.first?.rootViewController
-                send(.didTapSignInWithGoogle(viewController))
+                send(.didTapSignInWithGoogle)
             }
             CircularButton(image: DesignSystemAsset.apple) {
-                send(.didTapSignInWithApple(controller))
+                send(.didTapSignInWithApple)
             }
         }
     }
     
+    @ViewBuilder
     private var credentialsSection: some View {
         VStack(spacing: Layout.Spacing.form) {
             PrimaryTextField("Your Email", text: $store.email)
@@ -57,6 +56,7 @@ struct AuthenticationScreen: View {
         .textInputAutocapitalization(.never)
     }
     
+    @ViewBuilder
     private var loginSection: some View {
         VStack {
             PrimaryButton(label: "Log In") {

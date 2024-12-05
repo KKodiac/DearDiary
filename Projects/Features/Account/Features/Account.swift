@@ -9,12 +9,27 @@ public struct Account {
     public init() { }
     @ObservableState
     public struct State {
+        var signIn: SignIn.State
+        
         @Presents var destination: Destination.State?
-        @Shared(.appStorage("uid")) var uid = ""
-        @Shared(.appStorage("diary_name")) var diaryName = ""
+        @Shared var isInitialUser: Bool
+        @Shared var clientUID: String
         
         var error: FeatureError? = nil
-        public init() { }
+        public init(
+            isInitialUser: @autoclosure () -> Bool = true,
+            clientUID: @autoclosure () -> String = ""
+        ) {
+            self._isInitialUser = Shared(
+                wrappedValue: isInitialUser(),
+                .appStorage("is_initial_user")
+            )
+            self._clientUID = Shared(
+                wrappedValue: clientUID(),
+                .appStorage("client_uid")
+            )
+            self.signIn = SignIn.State(clientUID: self._clientUID)
+        }
     }
     
     public enum Action: ViewAction {
@@ -28,8 +43,8 @@ public struct Account {
         public enum ViewActions: BindableAction {
             case didAppear
             case didReceiveOpenURL(URL)
-            case didTapSignInWithGoogle(UIViewController?)
-            case didTapSignInWithApple(AuthorizationController)
+            case didTapSignInWithGoogle
+            case didTapSignInWithApple
             case didTapSignInWithEmail
             case didTapSignUpWithEmail
             
@@ -41,14 +56,7 @@ public struct Account {
         }
         
         public enum InternalActions {
-            case didSucceedSignIn(String)
-            
-            case didRequestSignInScreen
-            case didRequestSignUpScreen
-            case didRequestSetUpScreen
-            
-            case didRequestGoogleSignIn(UIViewController?)
-            case didRequestAppleSignIn(AuthorizationController)
+            case signIn(SignIn.Action)
             
             case didFailFeatureAction(FeatureError)
         }
@@ -63,10 +71,7 @@ public struct Account {
     }
     
     @Dependency(\.defaultAppStorage) private var appStorage
-    @Dependency(\.authClient.firebase) private var firebase
-    @Dependency(\.authClient.apple) private var apple
-    @Dependency(\.authClient.google) private var google
-    
+    @Dependency(\.authClient) private var authClient
     
     public var body: some ReducerOf<Self> {
         BindingReducer(action: \.view)
@@ -76,42 +81,30 @@ public struct Account {
                 switch action {
                 case .didAppear:
                     return .run(priority: .userInitiated) { @MainActor send in
-                        try firebase.configure()
+                        try authClient.configure()
                     } catch: { error, send in
                         
                     }
                 case .didReceiveOpenURL(_):
                     return .none
                     
-                case .didTapSignInWithGoogle(let viewController):
-                    return .run(priority: .userInitiated) { @MainActor send in
-                        guard let clientID = firebase.clientID,
-                              let viewController = viewController
-                        else {
-                            return
-                        }
-                        let auth = try await google.login(
-                            clientID,
-                            vc: viewController
-                        )
-                        let result = try await firebase.signIn(auth)
-                    }
+                case .didTapSignInWithGoogle:
+                    return SignIn()
+                        .signInWithGoogle(state: &state.signIn)
+                        .map { Action.internal(.signIn($0)) }
                     
-                case .didTapSignInWithApple(let controller):
-                    return .run(priority: .userInitiated) { @MainActor send in
-                        let auth = try await apple.login()
-                        let result = try await firebase.signIn(auth)
-                    }
+                case .didTapSignInWithApple:
+                    return SignIn()
+                        .signInWithApple(state: &state.signIn)
+                        .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithEmail:
-                    return .send(
-                        .internal(.didRequestSignInScreen)
-                    )
+                    state.destination = .signIn(Authentication.State(clientUID: state.$clientUID))
+                    return .none
                     
                 case .didTapSignUpWithEmail:
-                    return .send(
-                        .internal(.didRequestSignUpScreen)
-                    )
+                    state.destination = .signUp(Registration.State())
+                    return .none
                     
                 case .binding:
                     return .none
@@ -120,98 +113,53 @@ public struct Account {
             
             NestedAction(\.internal) { state, action in
                 switch action {
-                case .didRequestSignInScreen:
-                    state.destination = .signIn(Authentication.State())
-                    return .none
-                    
-                case .didRequestSignUpScreen:
-                    state.destination = .signUp(Registration.State())
-                    return .none
-                    
-                case .didRequestSetUpScreen:
+                case .signIn(.delegate(.navigateToSetup)):
                     state.destination = .setUp(Setup.State())
                     return .none
                     
-                case .didSucceedSignIn(let userId):
-                    state.uid = userId
-                    if state.diaryName.isEmpty {
-                        state.destination = .setUp(Setup.State())
-                        return .none
-                    }
+                case .signIn(.delegate(.navigateToDiary)):
                     return .send(.delegate(.navigateToDiary))
+                    
+                case .signIn(.delegate(.didThrowError(let error))):
+                    state.error = FeatureError(error: error)
+                    return .none
                     
                 case .didFailFeatureAction(let error):
                     state.error = error
-                    return .none
-                    
-                case .didRequestGoogleSignIn(let viewController):
-                    return .run { _ in
-                    } catch: { _, send in
-                        await send(.internal(.didFailFeatureAction(.authenticationAttemptDidNotSucceed)))
-                    }
-                case .didRequestAppleSignIn(let controller):
-                    return .run { send in
-                        
-                    } catch: { _, send in
-                        await send(.internal(.didFailFeatureAction(.authenticationAttemptDidNotSucceed)))
-                    }
-                }
-            }
-            
-            NestedAction(\.destination) { state, action in
-                switch action {
-                case .presented(.signIn(.delegate(
-                    .didRequestAppleSignIn(let controller)))):
-                    return .send(
-                        .internal(.didRequestAppleSignIn(controller))
-                    )
-                    
-                case .presented(.signIn(.delegate(
-                    .didRequestGoogleSignIn(let controller)))):
-                    return .send(
-                        .internal(.didRequestGoogleSignIn(controller))
-                    )
-                    
-                case .presented(.signUp(.delegate(
-                    .navigateToSignIn))):
-                    return .send(
-                        .internal(.didRequestSignInScreen)
-                    )
-                    
-                case .presented(.signUp(.delegate(
-                    .navigateToSetUp))):
-                    return .send(
-                        .internal(.didRequestSetUpScreen)
-                    )
-                case .dismiss:
-                    return .none
-                case .presented(.signIn(.view(_))):
-                    return .none
-                case .presented(.signIn(.delegate(.navigateToSetUp))):
-                    return .none
-                case .presented(.signIn(.delegate(.navigateToDiary))):
-                    return .none
-                case .presented(.signIn(.delegate(.navigateToSignUp))):
-                    return .none
-                case .presented(.signIn(.internal(_))):
-                    return .none
-                case .presented(.signUp(.view(_))):
-                    return .none
-                case .presented(.signUp(.delegate(.navigateToDiary))):
-                    return .none
-                case .presented(.signUp(.internal(_))):
-                    return .none
-                case .presented(.setUp(_)):
                     return .none
                 }
             }
         }
         .ifLet(\.$destination, action: \.destination)
+        .onChange(of: \.clientUID) { oldValue, newValue in
+            Reduce { state, action in
+                guard state.isInitialUser else {
+                    return .send(.delegate(.navigateToDiary))
+                }
+                state.destination = .setUp(Setup.State())
+                return .none
+            }
+        }
     }
 }
 
 extension Account {
     public enum FeatureError: LocalizedError {
         case authenticationAttemptDidNotSucceed
+        case unknown
+        
+        // MARK: Child Feature Errors
+        case signInThrewError(SignIn.FeatureError)
+        
+        
+        public init(error: Error) {
+            switch error {
+            case let error as SignIn.FeatureError:
+                self = FeatureError.signInThrewError(error)
+                
+            default:
+                self = FeatureError.unknown
+            }
+        }
     }
 }
