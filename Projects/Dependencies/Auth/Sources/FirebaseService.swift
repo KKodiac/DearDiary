@@ -2,6 +2,8 @@ import FirebaseAuth
 import ExternalDependencies
 
 extension FirebaseAuthService: FirebaseAuthServiceInterface {
+    
+
     var clientID: String? {
         FirebaseApp.app()?.options.clientID
     }
@@ -25,6 +27,11 @@ extension FirebaseAuthService: FirebaseAuthServiceInterface {
     func signIn(_ auth: AuthCredential) async throws -> AuthDataResult {
         let authApp = FirebaseAuth.Auth.auth()
         return try await authApp.signIn(with: auth)
+    }
+    
+    func signIn(email: String, password: String) async throws -> AuthDataResult {
+        let authApp = FirebaseAuth.Auth.auth()
+        return try await authApp.signIn(withEmail: email, password: password)
     }
     
     func signOut() throws {
