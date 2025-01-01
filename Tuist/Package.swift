@@ -19,6 +19,10 @@ let package = Package(
             exact: Version(stringLiteral: "1.15.2")
         ),
         .package(
+            url: "https://github.com/pointfreeco/swift-snapshot-testing",
+            exact: Version(stringLiteral: "1.12.0")
+        ),
+        .package(
             url: "https://github.com/Moya/Moya.git",
             exact: Version(stringLiteral: "15.0.3")
         ),

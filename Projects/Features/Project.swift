@@ -23,7 +23,7 @@ let project = Project(
             product: .staticLibrary,
             bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features.Account",
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
-            sources: [.glob(.relativeToCurrentFile("Account/**"))],
+            sources: [.glob(.relativeToCurrentFile("Account/**"), excluding: ["Account/Tests/**"])],
             dependencies: [
                 .project(
                     target: "DesignSystem",
@@ -43,6 +43,18 @@ let project = Project(
                 ),
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
+        ),
+        .target(
+            name: "AccountTest",
+            destinations: Project.Environment.destinations,
+            product: .unitTests,
+            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features.AccountTest",
+            infoPlist: .extendingDefault(with: Project.Secrets.testInfoPList),
+            sources: [.glob(.relativeToCurrentFile("Account/Tests/**"))],
+            dependencies: [
+                .target(name: "Account"),
+                .external(name: "SnapshotTesting")
+            ]
         ),
         .target(
             name: "Diary",
