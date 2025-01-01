@@ -13,6 +13,7 @@ public struct Setup: Sendable {
         @Shared var name: String
         @Shared var personality: Personality
         @Shared(.appStorage("uid")) var uid = ""
+        
         init(
             expanded: Bool = false,
             personalities: [Personality] = [],
@@ -30,7 +31,7 @@ public struct Setup: Sendable {
         case view(ViewAction)
         case delegate(DelegateAction)
         case `internal`(InternalAction)
-
+        
         public enum ViewAction: Sendable, BindableAction {
             case didAppear
             case didTapPicker(Personality)
@@ -52,16 +53,16 @@ public struct Setup: Sendable {
         CombineReducers {
             NestedAction(\.view) { state, action in
                 switch action {
-                case .didAppear:
-                    return .none
-                case .didTapPicker(let personality):
-                    state.personality = personality
-                    state.expanded.toggle()
-                    return .none
-                case .didTapGetStarted:
-                    return .send(.delegate(.navigateToDiary))
-                case .binding(_):
-                    return .none
+                    case .didAppear:
+                        return .none
+                    case .didTapPicker(let personality):
+                        state.personality = personality
+                        state.expanded.toggle()
+                        return .none
+                    case .didTapGetStarted:
+                        return .send(.delegate(.navigateToDiary))
+                    case .binding(_):
+                        return .none
                 }
             }
         }
