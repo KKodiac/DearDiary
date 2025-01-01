@@ -9,6 +9,6 @@ public protocol FirebaseAuthServiceInterface {
     func signOut() async throws
 }
 
-class FirebaseAuthService: NSObject {
+final class FirebaseAuthService: NSObject {
     let appName: String = Bundle.main.bundleIdentifier ?? "com.deardiary.app"
 }
