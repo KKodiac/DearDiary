@@ -18,6 +18,7 @@ Trying to decide how to integrate SwiftData with TCA
   - Apple Sign-In
 - 💭 Personalized diary interactions
 - 🎨 Clean and modern UI design
+- 🏞️ Snapshot Testing
 
 ## Dependencies
 
@@ -39,7 +40,7 @@ tuist cache
 - Google Sign-In
 - Apple Sign-In
 - Tuist (Project Generation)
-- ~~Moya (Networking)~~ Deciding whether to ease up on package dependency
+- ~~Moya (Networking)~~ Lighter dependency
 
 ## Project Structure 
 ```
@@ -69,6 +70,7 @@ The project follows a modular architecture using Tuist for project generation an
 
 - **App**: Main application target and entry point
 - **Features**: Contains feature modules
+- **InternalDependencies**: Infrastructure management
 - **DesignSystem**: Shared UI components and styling
 - **ExternalDependencies**: Third-party dependency management
 - **Utility**: Shared utilities and helpers
