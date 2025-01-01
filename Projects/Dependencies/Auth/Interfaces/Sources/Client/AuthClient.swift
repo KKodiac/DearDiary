@@ -54,7 +54,7 @@ public struct AuthClient {
 }
 
 extension AuthClient: DependencyKey {
-    public static var liveValue = AuthClient(
+    public static let liveValue = AuthClient(
         firebaseAuthService: FirebaseAuthService(),
         appleAuthService: AppleAuthService(),
         googleAuthService: GoogleAuthService()
