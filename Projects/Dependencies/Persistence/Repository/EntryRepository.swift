@@ -10,19 +10,19 @@ final actor EntryModelRepository: EntryRepository {
             $0.id == id
         }
     }
-
+    
     func find(by title: String) -> Predicate<EntryModel> {
         #Predicate<EntryModel> {
             $0.title == title
         }
     }
-
+    
     func find(by title: String, and createAt: Date) -> Predicate<EntryModel> {
         #Predicate<EntryModel> {
             $0.title == title && $0.createdAt == createAt
         }
     }
-
+    
     // MARK: - Command Repository Implementation
     public func create(
         title: String,

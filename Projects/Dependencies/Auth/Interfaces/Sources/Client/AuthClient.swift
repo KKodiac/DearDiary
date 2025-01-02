@@ -51,6 +51,17 @@ public struct AuthClient {
             throw  AuthError(error: error)
         }
     }
+    
+    @discardableResult
+    public func signInWithEmail(email: String, password: String) async throws -> UID {
+        do {
+            let result = try await firebase.signIn(email: email, password: password)
+            
+            return result.user.uid
+        } catch {
+            throw AuthError(error: error)
+        }
+    }
 }
 
 extension AuthClient: DependencyKey {

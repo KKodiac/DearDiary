@@ -60,7 +60,7 @@ struct AuthenticationScreen: View {
     private var loginSection: some View {
         VStack {
             PrimaryButton(label: "Log In") {
-                // Add login action
+                send(.didTapSignInWithEmail)
             }
             .padding(.vertical, Layout.Spacing.medium)
             

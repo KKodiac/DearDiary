@@ -9,11 +9,16 @@ public enum GoogleAuthError: LocalizedError {
     
     public var errorDescription: String? {
         switch self {
-        case .googleViewControllerNotFound:         return "Google Sign In View Controller not found"
-        case .invalidIDToken:                       return "Invalid ID Token"
-        case .invalidFirebaseApp:                   return "Invalid Firebase App"
-        case .rootViewControllerNotFound:           return "Root View Controller not found"
-        case .otherError(let error):                return "The authorization error with other error: \(error.localizedDescription)"
+            case .googleViewControllerNotFound:         
+                return "Google Sign In View Controller not found"
+            case .invalidIDToken:                       
+                return "Invalid ID Token"
+            case .invalidFirebaseApp:                   
+                return "Invalid Firebase App"
+            case .rootViewControllerNotFound:           
+                return "Root View Controller not found"
+            case .otherError(let error):                
+                return "The authorization error with other error: \(error.localizedDescription)"
         }
     }
     
@@ -23,7 +28,7 @@ public enum GoogleAuthError: LocalizedError {
     
     public init(error: Error) {
         switch (error as NSError).code {
-        default:        self = .otherError(error)
+            default:        self = .otherError(error)
         }
     }
 }

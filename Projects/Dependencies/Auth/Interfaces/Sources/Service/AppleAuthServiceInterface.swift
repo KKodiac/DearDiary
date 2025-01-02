@@ -5,6 +5,6 @@ public protocol AppleAuthServiceInterface {
     func login() async throws -> AuthCredential
 }
 
-class AppleAuthService: NSObject {
+final class AppleAuthService: NSObject {
     var serviceSubject = PassthroughSubject<AuthCredential, AppleAuthError>()
 }

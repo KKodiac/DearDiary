@@ -15,23 +15,25 @@ public struct Authentication {
         
         @Shared var user: String
         
-        var email: String
-        var password: String
+        @Shared var email: String
+        @Shared var password: String
         
         var isPresented: Bool
         
         init(
             user: String = "",
             email: String = "",
-            password: String = "",
+            password  : String = "",
             isPresented: Bool = false,
             clientUID: Shared<String>
         ) {
             self._user = Shared(user)
-            self.email = email
-            self.password = password
+            self._email = Shared(email)
+            self._password = Shared(password)
             self.isPresented = isPresented
-            self.signIn = SignIn.State(clientUID: clientUID)
+            self.signIn = SignIn.State(
+                clientUID: clientUID
+            )
         }
     }
     
@@ -46,7 +48,6 @@ public struct Authentication {
             case didTapSignInWithApple
             case didTapSignInWithGoogle
             case didTapSignInWithEmail
-            
             
             case didTapNavigateToBack
             case didTapNavigateToSignUp
@@ -85,7 +86,13 @@ public struct Authentication {
                         .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithEmail:
-                    return .none
+                    return SignIn()
+                            .signInWithEmail(
+                                state: &state.signIn,
+                                email: state.email,
+                                password: state.password
+                            )
+                            .map { Action.internal(.signIn($0)) }
                     
                 case .didTapNavigateToBack:
                     return .run { send in
@@ -153,6 +160,19 @@ extension SignIn {
     func signInWithGoogle(state: inout State) -> Effect<Action> {
         return .run { [state] send in
             let clientUID = try await authClient.signInWithGoogle()
+            logger.log("Client UID: \(clientUID)")
+            await state.$clientUID.withLock { $0 = clientUID }
+        } catch: { error, send in
+            logger.error("Error: \(error)")
+        }
+    }
+    
+    func signInWithEmail(state: inout State, email: String, password: String) -> Effect<Action> {
+        return .run { [state] send in
+            let clientUID = try await authClient.signInWithEmail(
+                email: email,
+                password: password
+            )
             logger.log("Client UID: \(clientUID)")
             await state.$clientUID.withLock { $0 = clientUID }
         } catch: { error, send in

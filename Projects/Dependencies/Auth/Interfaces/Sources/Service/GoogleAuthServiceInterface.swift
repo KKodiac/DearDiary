@@ -6,6 +6,6 @@ public protocol GoogleAuthServiceInterface {
     @MainActor func logout() async throws
 }
 
-class GoogleAuthService: NSObject {
+final class GoogleAuthService: NSObject {
     
 }
