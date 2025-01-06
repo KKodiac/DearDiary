@@ -16,7 +16,7 @@ import SwiftUI
 final class RegistrationSnapshot: XCTestCase {
     
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+        // isRecording = true
     }
     
     override func tearDownWithError() throws {
@@ -29,7 +29,7 @@ final class RegistrationSnapshot: XCTestCase {
                 initialState: Registration.State(),
                 reducer: { Registration() },
                 withDependencies: {
-                    $0.authClient = .testValue
+                    $0.authClient = .snapshotValue
                 }
             )
         )
