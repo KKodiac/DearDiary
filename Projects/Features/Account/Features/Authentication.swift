@@ -10,7 +10,7 @@ public struct Authentication {
     public init() { }
     
     @ObservableState
-    public struct State {
+    public struct State: Sendable, Equatable {
         var signIn: SignIn.State
         
         @Shared var user: String
@@ -37,14 +37,14 @@ public struct Authentication {
         }
     }
     
-    public enum Action: ViewAction, Sendable {
+    public enum Action: ViewAction, Sendable, Equatable {
         
         
         case view(_ViewAction)
         case delegate(DelegateAction)
         case `internal`(InternalAction)
         
-        public enum _ViewAction: BindableAction, Sendable {
+        public enum _ViewAction: BindableAction, Sendable, Equatable {
             case didTapSignInWithApple
             case didTapSignInWithGoogle
             case didTapSignInWithEmail
@@ -55,13 +55,13 @@ public struct Authentication {
             case binding(BindingAction<State>)
         }
         
-        public enum DelegateAction: Sendable {
+        public enum DelegateAction: Sendable, Equatable {
             case navigateToSetUp
             case navigateToDiary
             case navigateToSignUp
         }
         
-        public enum InternalAction: Sendable {
+        public enum InternalAction: Sendable, Equatable {
             case signIn(SignIn.Action)
         }
     }
@@ -119,7 +119,7 @@ public struct SignIn: Sendable {
     
     @Dependency(\.authClient) private var authClient
     
-    public struct State {
+    public struct State: Equatable {
         @Shared var isInitialUser: Bool
         @Shared var clientUID: String
         
@@ -135,10 +135,10 @@ public struct SignIn: Sendable {
         }
     }
     
-    public enum Action : Sendable {
+    public enum Action : Sendable, Equatable {
         case delegate(DelegateAction)
         
-        public enum DelegateAction: Sendable {
+        public enum DelegateAction: Sendable, Equatable {
             case navigateToDiary
             case navigateToSetup
             case didThrowError(FeatureError)
@@ -186,3 +186,5 @@ extension SignIn {
         case authClientError(AuthError)
     }
 }
+
+extension SignIn.FeatureError: Equatable { }

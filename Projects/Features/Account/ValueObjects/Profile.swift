@@ -5,6 +5,6 @@ public struct Profile: Codable {
     var personality: Personality
 }
 
-public enum Personality: String, CaseIterable, Codable, Sendable {
+public enum Personality: String, CaseIterable, Codable, Sendable, Equatable {
     case basic
 }

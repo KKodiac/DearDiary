@@ -8,7 +8,7 @@ import SwiftUI
 public struct Account {
     public init() { }
     @ObservableState
-    public struct State {
+    public struct State: Equatable {
         var signIn: SignIn.State
         
         @Presents var destination: Destination.State?
@@ -16,6 +16,7 @@ public struct Account {
         @Shared var clientUID: String
         
         var error: FeatureError? = nil
+        
         public init(
             isInitialUser: @autoclosure () -> Bool = true,
             clientUID: @autoclosure () -> String = ""
@@ -32,7 +33,7 @@ public struct Account {
         }
     }
     
-    public enum Action: ViewAction {
+    public enum Action: ViewAction, Equatable {
         case destination(PresentationAction<Destination.Action>)
         
         case view(ViewActions)
@@ -40,7 +41,7 @@ public struct Account {
         case `internal`(InternalActions)
         
         
-        public enum ViewActions: BindableAction {
+        public enum ViewActions: BindableAction, Equatable {
             case didAppear
             case didReceiveOpenURL(URL)
             case didTapSignInWithGoogle
@@ -51,19 +52,19 @@ public struct Account {
             case binding(BindingAction<State>)
         }
         
-        public enum DelegateActions {
+        public enum DelegateActions: Equatable {
             case navigateToDiary
         }
         
-        public enum InternalActions {
+        public enum InternalActions: Equatable {
             case signIn(SignIn.Action)
             
-            case didFailFeatureAction(FeatureError)
+            case didThrowError(FeatureError)
         }
     }
     
     
-    @Reducer
+    @Reducer(state: .equatable, action: .equatable)
     public enum Destination {
         case signIn(Authentication)
         case signUp(Registration)
@@ -83,7 +84,8 @@ public struct Account {
                     return .run(priority: .userInitiated) { @MainActor send in
                         try authClient.configure()
                     } catch: { error, send in
-                        
+                        let error = FeatureError(error: error)
+                        await send(.internal(.didThrowError(error)))
                     }
                 case .didReceiveOpenURL(_):
                     return .none
@@ -124,7 +126,7 @@ public struct Account {
                     state.error = FeatureError(error: error)
                     return .none
                     
-                case .didFailFeatureAction(let error):
+                case .didThrowError(let error):
                     state.error = error
                     return .none
                 }
@@ -146,20 +148,23 @@ public struct Account {
 extension Account {
     public enum FeatureError: LocalizedError {
         case authenticationAttemptDidNotSucceed
+        case authClientFailedToConfigure
         case unknown
         
         // MARK: Child Feature Errors
         case signInThrewError(SignIn.FeatureError)
         
-        
         public init(error: Error) {
             switch error {
-            case let error as SignIn.FeatureError:
-                self = FeatureError.signInThrewError(error)
-                
+                case let error as SignIn.FeatureError:
+                    self = .signInThrewError(error)
+                case let error as FirebaseAuthError:
+                    self = .authClientFailedToConfigure
             default:
                 self = FeatureError.unknown
             }
         }
     }
 }
+
+extension Account.FeatureError: Equatable { }

@@ -6,7 +6,7 @@ import ExternalDependencies
 public struct Setup: Sendable {
     public init() { }
     @ObservableState
-    public struct State: Sendable {
+    public struct State: Sendable, Equatable {
         var expanded: Bool
         var personalities: [Personality]
         
@@ -27,12 +27,12 @@ public struct Setup: Sendable {
         }
     }
     
-    public enum Action: ViewAction, Sendable {
+    public enum Action: ViewAction, Sendable, Equatable {
         case view(ViewAction)
         case delegate(DelegateAction)
         case `internal`(InternalAction)
-        
-        public enum ViewAction: Sendable, BindableAction {
+
+        public enum ViewAction: BindableAction, Sendable, Equatable {
             case didAppear
             case didTapPicker(Personality)
             case didTapGetStarted
@@ -40,11 +40,11 @@ public struct Setup: Sendable {
             case binding(_ action: BindingAction<State>)
         }
         
-        public enum DelegateAction: Sendable {
+        public enum DelegateAction: Sendable, Equatable {
             case navigateToDiary
         }
         
-        public enum InternalAction: Sendable { }
+        public enum InternalAction: Sendable, Equatable { }
     }
     
     public var body: some ReducerOf<Self> {

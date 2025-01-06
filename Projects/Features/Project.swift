@@ -12,76 +12,10 @@ let project = Project(
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: [.glob(.relativeToCurrentFile("Features/*"))],
             dependencies: [
-                .target(name: "Account", condition: .when([.ios])),
-                .target(name: "Diary", condition: .when([.ios])),
+                .project(target: "Account", path: .relativeToCurrentFile("Account")),
+                .project(target: "Diary", path: .relativeToCurrentFile("Diary")),
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
-        ),
-        .target(
-            name: "Account",
-            destinations: Project.Environment.destinations,
-            product: .staticLibrary,
-            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features.Account",
-            infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
-            sources: [.glob(.relativeToCurrentFile("Account/**"), excluding: ["Account/Tests/**"])],
-            dependencies: [
-                .project(
-                    target: "DesignSystem",
-                    path: .relativeToRoot("Projects/DesignSystem")
-                ),
-                .project(
-                    target: "InternalDependencies",
-                    path: .relativeToRoot("Projects/Dependencies")
-                ),
-                .project(
-                    target: "ExternalDependencies",
-                    path: .relativeToRoot("Projects/ExternalDependencies")
-                ),
-                .project(
-                    target: "Utility",
-                    path: .relativeToRoot("Projects/Utility")
-                ),
-            ],
-            settings: .settings(configurations: [.defaultDebug, .defaultRelease])
-        ),
-        .target(
-            name: "AccountTest",
-            destinations: Project.Environment.destinations,
-            product: .unitTests,
-            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features.AccountTest",
-            infoPlist: .extendingDefault(with: Project.Secrets.testInfoPList),
-            sources: [.glob(.relativeToCurrentFile("Account/Tests/**"))],
-            dependencies: [
-                .target(name: "Account"),
-                .external(name: "SnapshotTesting")
-            ]
-        ),
-        .target(
-            name: "Diary",
-            destinations: Project.Environment.destinations,
-            product: .staticLibrary,
-            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features.Diary",
-            infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
-            sources: [.glob(.relativeToCurrentFile("Diary/**"))],
-            dependencies: [
-                .project(
-                    target: "DesignSystem",
-                    path: .relativeToRoot("Projects/DesignSystem")
-                ),
-                .project(
-                    target: "InternalDependencies",
-                    path: .relativeToRoot("Projects/Dependencies")
-                ),
-                .project(
-                    target: "ExternalDependencies",
-                    path: .relativeToRoot("Projects/ExternalDependencies")
-                ),
-                .project(
-                    target: "Utility",
-                    path: .relativeToRoot("Projects/Utility")
-                ),
-            ],
-            settings: .settings(configurations: [.defaultDebug, .defaultRelease])
-        ),
+        )
     ]
 )

@@ -6,7 +6,7 @@ import Foundation
 public struct Registration: Sendable {
     public init() { }
     @ObservableState
-    public struct State: Sendable {
+    public struct State: Sendable, Equatable {
         @Shared var uid: String
         var email: String
         var name: String
@@ -34,12 +34,12 @@ public struct Registration: Sendable {
         }
     }
     
-    public enum Action: Sendable, ViewAction {
+    public enum Action: ViewAction, Sendable, Equatable {
         case view(ViewAction)
         case delegate(DelegateAction)
         case `internal`(InternalAction)
         
-        public enum ViewAction: Sendable, BindableAction {
+        public enum ViewAction: BindableAction, Sendable, Equatable {
             case didTapSignUpWithEmail
             
             case didTapNavigateToBack
@@ -48,14 +48,14 @@ public struct Registration: Sendable {
             case binding(BindingAction<State>)
         }
         
-        public enum InternalAction: Sendable {
+        public enum InternalAction: Sendable, Equatable {
             case didRequestEmailSignUp
             
             case didSucceedSignUp(String)
             case didFailFeatureError(Registration.FeatureError)
         }
         
-        public enum DelegateAction: Sendable {
+        public enum DelegateAction: Sendable, Equatable {
             case navigateToSetUp
             case navigateToDiary
             case navigateToSignIn
