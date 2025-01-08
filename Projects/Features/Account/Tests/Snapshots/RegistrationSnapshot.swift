@@ -35,10 +35,15 @@ final class RegistrationSnapshot: XCTestCase {
         )
         let vc = UIHostingController(rootView: view)
         vc.view.frame = UIScreen.main.bounds
-        assertSnapshot(of: vc, as: .image(on: .iPhoneSe))
-        assertSnapshot(of: vc, as: .image(on: .iPhone13))
-        assertSnapshot(of: vc, as: .image(on: .iPhone13Mini))
-        assertSnapshot(of: vc, as: .image(on: .iPhone13Pro))
-        assertSnapshot(of: vc, as: .image(on: .iPhone13ProMax))
+        assertSnapshots(
+            of: vc,
+            as: [
+                .image(on: .iPhoneSe),
+                .image(on: .iPhone13),
+                .image(on: .iPhone13Mini),
+                .image(on: .iPhone13Pro),
+                .image(on: .iPhone13ProMax),
+            ]
+        )
     }
 }
