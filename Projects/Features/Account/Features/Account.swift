@@ -132,6 +132,21 @@ public struct Account {
                     return .none
                 }
             }
+            
+            NestedAction(\.destination) { state, action in
+                switch action {
+                case  \.signUp.delegate.navigateToSignIn:
+                    state.destination = .signIn(Authentication.State(clientUID: state.$clientUID))
+                    return .none
+                case .dismiss:
+                    return .none
+                case \.signIn.delegate.navigateToSignUp:
+                    state.destination = .signUp(Registration.State())
+                    return .none
+                case .presented(_):
+                    return .none
+                }
+            }
         }
         .ifLet(\.$destination, action: \.destination)
         .onChange(of: \.clientUID) { oldValue, newValue in

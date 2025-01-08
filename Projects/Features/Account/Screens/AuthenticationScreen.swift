@@ -22,7 +22,7 @@ struct AuthenticationScreen: View {
             .primaryHorizontalPadding()
         }
         .toolbar { toolbarContent }
-//        .alert(isPresented: $store.isPresented, error: "") { errorAlert }
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
     
     @ViewBuilder
@@ -65,7 +65,7 @@ struct AuthenticationScreen: View {
             .padding(.vertical, Layout.Spacing.medium)
             
             Button {
-                // Add navigation action
+                send(.didTapNavigateToSignUp)
             } label: {
                 Text("Go to Sign Up")
                     .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 14))
@@ -83,12 +83,6 @@ struct AuthenticationScreen: View {
             } label: {
                 DesignSystemAsset.back.swiftUIImage.foregroundStyle(.black)
             }
-        }
-    }
-    
-    private var errorAlert: some View {
-        Button("OK") {
-            store.isPresented.toggle()
         }
     }
 }

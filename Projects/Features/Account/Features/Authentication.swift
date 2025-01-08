@@ -13,24 +13,22 @@ public struct Authentication {
     public struct State: Sendable, Equatable {
         var signIn: SignIn.State
         
-        @Shared var user: String
+        @Presents var alert: AlertState<Action.Alert>?
         
+        @Shared var user: String
         @Shared var email: String
         @Shared var password: String
         @Shared var clientUID: String
-        var isPresented: Bool
         
         init(
             user: String = "",
             email: String = "",
             password  : String = "",
-            isPresented: Bool = false,
             clientUID: Shared<String>
         ) {
             self._user = Shared(user)
             self._email = Shared(email)
             self._password = Shared(password)
-            self.isPresented = isPresented
             self._clientUID = clientUID
             self.signIn = SignIn.State(
                 clientUID: clientUID
@@ -39,6 +37,8 @@ public struct Authentication {
     }
     
     public enum Action: ViewAction, Sendable, Equatable {
+        case alert(PresentationAction<Alert>)
+        
         case view(ViewActions)
         case delegate(DelegateActions)
         case `internal`(InternalActions)
@@ -63,6 +63,11 @@ public struct Authentication {
         
         public enum InternalActions: Sendable, Equatable {
             case signIn(SignIn.Action)
+        }
+        
+        @CasePathable
+        public enum Alert: Sendable {
+            case signInError
         }
     }
     
@@ -100,7 +105,7 @@ public struct Authentication {
                     }
                     
                 case .didTapNavigateToSignUp:
-                    return .none
+                    return .send(.delegate(.navigateToSignUp))
                     
                 case .binding(_):
                     return .none
@@ -113,11 +118,21 @@ public struct Authentication {
                     return .send(.delegate(.navigateToSetUp))
                 case .signIn(.delegate(.navigateToDiary)):
                     return .send(.delegate(.navigateToDiary))
-                case .signIn(.delegate(.didThrowError(_))):
+                case .signIn(.delegate(.didThrowError(let error))):
+                    state.alert = AlertState {
+                        TextState("Sign In Error")
+                    } actions: {
+                        ButtonState(role: .cancel) {
+                            TextState("Ok")
+                        }
+                    } message: {
+                        TextState("Sign In Attempt Failed: \(error.localizedDescription)")
+                    }
                     return .none
                 }
             }
         }
+        .ifLet(\.$alert, action: \.alert)
     }
 }
 
@@ -138,124 +153,3 @@ extension Authentication {
         }
     }
 }
-
-@Reducer
-public struct SignIn: Sendable {
-    private let logger = Logger(
-        subsystem: "com.bibumtiger.deardiary",
-        category: "SignIn"
-    )
-    
-    @Dependency(\.authClient) private var authClient
-    
-    public struct State: Equatable {
-        @Shared var isInitialUser: Bool
-        @Shared var clientUID: String
-        
-        public init(
-            isInitialUser: @autoclosure () -> Bool = true,
-            clientUID: Shared<String>
-        ) {
-            self._isInitialUser = Shared(
-                wrappedValue: isInitialUser(),
-                .appStorage("is_initial_user")
-            )
-            self._clientUID = clientUID
-        }
-    }
-    
-    public enum Action : Sendable, Equatable {
-        case delegate(DelegateActions)
-        
-        @CasePathable
-        public enum DelegateActions: Sendable, Equatable {
-            case navigateToDiary
-            case navigateToSetup
-            case didThrowError(FeatureError)
-        }
-    }
-}
-
-extension SignIn {
-    func signInWithApple(state: inout State) -> Effect<Action> {
-        return .run { [state] send in
-            let authData = try await authClient.signInWithApple()
-            
-            let clientUID = authData.user.uid
-            logger.log("Client UID: \(clientUID)")
-            await state.$clientUID.withLock { $0 = clientUID }
-            
-            if let isNewUser = authData.additionalUserInfo?.isNewUser {
-                logger.log("New User: \(isNewUser)")
-                await state.$isInitialUser.withLock { $0 = isNewUser }
-                if isNewUser { await send(.delegate(.navigateToSetup)) }
-            }
-            await send(.delegate(.navigateToDiary))
-        } catch: { error, send in
-            logger.error("Error: \(error)")
-            await send(.delegate(.didThrowError(FeatureError(error: error))))
-        }
-    }
-    
-    func signInWithGoogle(state: inout State) -> Effect<Action> {
-        return .run { [state] send in
-            let authData = try await authClient.signInWithGoogle()
-            
-            let clientUID = authData.user.uid
-            logger.log("Client UID: \(clientUID)")
-            await state.$clientUID.withLock { $0 = clientUID }
-            
-            if let isNewUser = authData.additionalUserInfo?.isNewUser {
-                logger.log("New User: \(isNewUser)")
-                await state.$isInitialUser.withLock { $0 = isNewUser }
-                if isNewUser { await send(.delegate(.navigateToSetup)) }
-            }
-            await send(.delegate(.navigateToDiary))
-        } catch: { error, send in
-            logger.error("Error: \(error)")
-            await send(.delegate(.didThrowError(FeatureError(error: error))))
-        }
-    }
-    
-    func signInWithEmail(state: inout State, email: String, password: String) -> Effect<Action> {
-        return .run { [state] send in
-            let authData = try await authClient.signInWithEmail(
-                email: email,
-                password: password
-            )
-            
-            let clientUID = authData.user.uid
-            logger.log("Client UID: \(clientUID)")
-            await state.$clientUID.withLock { $0 = clientUID }
-            
-            if let isNewUser = authData.additionalUserInfo?.isNewUser {
-                logger.log("New User: \(isNewUser)")
-                await state.$isInitialUser.withLock { $0 = isNewUser }
-                if isNewUser { await send(.delegate(.navigateToSetup)) }
-            }
-            await send(.delegate(.navigateToDiary))
-        } catch: { error, send in
-            logger.error("Error: \(error)")
-            await send(.delegate(.didThrowError(FeatureError(error: error))))
-        }
-    }
-}
-
-extension SignIn {
-    public enum FeatureError: LocalizedError {
-        case authClientError(AuthError)
-        
-        case unknown
-        
-        public init(error: Error) {
-            switch error {
-            case let error as AuthError:
-                self = .authClientError(error)
-            default:
-                self = .unknown
-            }
-        }
-    }
-}
-
-extension SignIn.FeatureError: Equatable { }
