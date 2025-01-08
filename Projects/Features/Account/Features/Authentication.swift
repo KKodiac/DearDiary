@@ -17,7 +17,7 @@ public struct Authentication {
         
         @Shared var email: String
         @Shared var password: String
-        
+        @Shared var clientUID: String
         var isPresented: Bool
         
         init(
@@ -31,6 +31,7 @@ public struct Authentication {
             self._email = Shared(email)
             self._password = Shared(password)
             self.isPresented = isPresented
+            self._clientUID = clientUID
             self.signIn = SignIn.State(
                 clientUID: clientUID
             )
@@ -105,6 +106,35 @@ public struct Authentication {
                     return .none
                 }
             }
+            
+            NestedAction(\.internal) { state, action in
+                switch action {
+                case .signIn(.delegate(.navigateToSetup)):
+                    return .send(.delegate(.navigateToSetUp))
+                case .signIn(.delegate(.navigateToDiary)):
+                    return .send(.delegate(.navigateToDiary))
+                case .signIn(.delegate(.didThrowError(_))):
+                    return .none
+                }
+            }
+        }
+    }
+}
+
+extension Authentication {
+    public enum FeatureError: LocalizedError {
+        case unknown
+        
+        // MARK: Child Feature Errors
+        case signInThrewError(SignIn.FeatureError)
+        
+        public init(error: Error) {
+            switch error {
+            case let error as SignIn.FeatureError:
+                self = .signInThrewError(error)
+            default:
+                self = .unknown
+            }
         }
     }
 }
@@ -149,34 +179,64 @@ public struct SignIn: Sendable {
 extension SignIn {
     func signInWithApple(state: inout State) -> Effect<Action> {
         return .run { [state] send in
-            let clientUID = try await authClient.signInWithApple()
+            let authData = try await authClient.signInWithApple()
+            
+            let clientUID = authData.user.uid
             logger.log("Client UID: \(clientUID)")
             await state.$clientUID.withLock { $0 = clientUID }
+            
+            if let isNewUser = authData.additionalUserInfo?.isNewUser {
+                logger.log("New User: \(isNewUser)")
+                await state.$isInitialUser.withLock { $0 = isNewUser }
+                if isNewUser { await send(.delegate(.navigateToSetup)) }
+            }
+            await send(.delegate(.navigateToDiary))
         } catch: { error, send in
             logger.error("Error: \(error)")
+            await send(.delegate(.didThrowError(FeatureError(error: error))))
         }
     }
     
     func signInWithGoogle(state: inout State) -> Effect<Action> {
         return .run { [state] send in
-            let clientUID = try await authClient.signInWithGoogle()
+            let authData = try await authClient.signInWithGoogle()
+            
+            let clientUID = authData.user.uid
             logger.log("Client UID: \(clientUID)")
             await state.$clientUID.withLock { $0 = clientUID }
+            
+            if let isNewUser = authData.additionalUserInfo?.isNewUser {
+                logger.log("New User: \(isNewUser)")
+                await state.$isInitialUser.withLock { $0 = isNewUser }
+                if isNewUser { await send(.delegate(.navigateToSetup)) }
+            }
+            await send(.delegate(.navigateToDiary))
         } catch: { error, send in
             logger.error("Error: \(error)")
+            await send(.delegate(.didThrowError(FeatureError(error: error))))
         }
     }
     
     func signInWithEmail(state: inout State, email: String, password: String) -> Effect<Action> {
         return .run { [state] send in
-            let clientUID = try await authClient.signInWithEmail(
+            let authData = try await authClient.signInWithEmail(
                 email: email,
                 password: password
             )
+            
+            let clientUID = authData.user.uid
             logger.log("Client UID: \(clientUID)")
             await state.$clientUID.withLock { $0 = clientUID }
+            
+            if let isNewUser = authData.additionalUserInfo?.isNewUser {
+                logger.log("New User: \(isNewUser)")
+                await state.$isInitialUser.withLock { $0 = isNewUser }
+                if isNewUser { await send(.delegate(.navigateToSetup)) }
+            }
+            await send(.delegate(.navigateToDiary))
         } catch: { error, send in
             logger.error("Error: \(error)")
+            await send(.delegate(.didThrowError(FeatureError(error: error))))
         }
     }
 }
@@ -184,6 +244,17 @@ extension SignIn {
 extension SignIn {
     public enum FeatureError: LocalizedError {
         case authClientError(AuthError)
+        
+        case unknown
+        
+        public init(error: Error) {
+            switch error {
+            case let error as AuthError:
+                self = .authClientError(error)
+            default:
+                self = .unknown
+            }
+        }
     }
 }
 

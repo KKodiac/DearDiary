@@ -2,8 +2,6 @@ import Foundation
 import Dependencies
 
 public struct AuthClient {
-    public typealias UID = String
-    
     private let firebase: FirebaseAuthServiceInterface
     private let apple: AppleAuthServiceInterface
     private let google: GoogleAuthServiceInterface
@@ -20,13 +18,13 @@ public struct AuthClient {
     }
     
     @MainActor
-    public func configure() throws -> Void {
+    public func configure() -> Void {
         guard firebase.isConfigured == false else { return }
         firebase.configure()
     }
     
     @discardableResult
-    public func signInWithGoogle() async throws -> UID {
+    public func signInWithGoogle() async throws -> AuthDataResult {
         guard let clientID = firebase.clientID else {
             throw AuthError.firebaseAuthError(.clientIDIsNil)
         }
@@ -35,30 +33,30 @@ public struct AuthClient {
             let credential = try await google.login(clientID)
             let result = try await firebase.signIn(credential)
             
-            return result.user.uid
+            return result
         } catch  {
             throw AuthError(error: error)
         }
     }
     
     @discardableResult
-    public func signInWithApple() async throws -> UID {
+    public func signInWithApple() async throws -> AuthDataResult {
         do {
             let credential = try await apple.login()
             let result = try await firebase.signIn(credential)
             
-            return result.user.uid
+            return result
         } catch {
             throw  AuthError(error: error)
         }
     }
     
     @discardableResult
-    public func signInWithEmail(email: String, password: String) async throws -> UID {
+    public func signInWithEmail(email: String, password: String) async throws -> AuthDataResult {
         do {
             let result = try await firebase.signIn(email: email, password: password)
             
-            return result.user.uid
+            return result
         } catch {
             throw AuthError(error: error)
         }

@@ -83,7 +83,7 @@ public struct Account {
                 switch action {
                 case .didAppear:
                     return .run(priority: .userInitiated) { @MainActor send in
-                        try authClient.configure()
+                        authClient.configure()
                     } catch: { error, send in
                         let error = FeatureError(error: error)
                         await send(.internal(.didThrowError(error)))
@@ -143,6 +143,7 @@ public struct Account {
                 return .none
             }
         }
+        ._printChanges()
     }
 }
 
@@ -162,7 +163,7 @@ extension Account {
                 case _ as FirebaseAuthError:
                     self = .authClientFailedToConfigure
             default:
-                self = FeatureError.unknown
+                self = .unknown
             }
         }
     }
