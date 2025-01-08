@@ -21,7 +21,8 @@ public struct AuthClient {
     
     @MainActor
     public func configure() throws -> Void {
-        try firebase.configure()
+        guard firebase.isConfigured == false else { return }
+        firebase.configure()
     }
     
     @discardableResult

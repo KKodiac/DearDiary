@@ -10,12 +10,12 @@ final class TestableFirebaseAuthService: FirebaseAuthServiceInterface {
         FirebaseApp.app()?.options.clientID
     }
     
+    var isConfigured: Bool {
+        FirebaseApp.app(name: Self.testableFirebaseApp) != nil
+    }
+    
     @MainActor
-    func configure() throws {
-        guard FirebaseApp.app(name: Self.testableFirebaseApp) == nil else {
-            throw FirebaseAuthError.firebaseAppIsAlreadyConfigured
-        }
-        
+    func configure() {
         guard let path = Bundle(for: type(of: self)).path(forResource: "Info", ofType: "plist"),
               let options = FirebaseOptions(contentsOfFile: path) else {
             assert(false, "Couldn't load configuration file.")
@@ -48,12 +48,12 @@ final class SnapshotFirebaseAuthService: FirebaseAuthServiceInterface {
         FirebaseApp.app()?.options.clientID
     }
     
+    var isConfigured: Bool {
+        FirebaseApp.app(name: firebaseApp) != nil
+    }
+    
     @MainActor
-    func configure() throws {
-        guard FirebaseApp.app(name: firebaseApp) == nil else {
-            throw FirebaseAuthError.firebaseAppIsAlreadyConfigured
-        }
-        
+    func configure() {
         guard let path = Bundle(for: type(of: self)).path(forResource: "Info", ofType: "plist"),
               let options = FirebaseOptions(contentsOfFile: path) else {
             assert(false, "Couldn't load configuration file.")

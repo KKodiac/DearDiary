@@ -2,19 +2,16 @@ import FirebaseAuth
 import ExternalDependencies
 
 extension FirebaseAuthService: FirebaseAuthServiceInterface {
-    
-
     var clientID: String? {
         FirebaseApp.app()?.options.clientID
     }
     
+    var isConfigured: Bool {
+        FirebaseApp.app() != nil
+    }
+    
     @MainActor
-    func configure() throws {
-        guard FirebaseApp.app() == nil else {
-            throw FirebaseAuthError.firebaseAppIsAlreadyConfigured
-        }
-        
-        
+    func configure() {
         guard let path = Bundle.main.path(forResource: "Info", ofType: "plist"),
               let options = FirebaseOptions(contentsOfFile: path) else {
             assert(false, "Couldn't load configuration file.")
