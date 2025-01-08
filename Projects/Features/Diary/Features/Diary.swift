@@ -7,7 +7,7 @@ import SwiftData
 public struct Diary {
     public init() { }
     @ObservableState
-    public struct State {
+    public struct State: Equatable, Sendable {
         @Shared(.appStorage("uid")) var uid = ""
         @Shared(.appStorage("diary_name")) var diaryName = ""
         var focusDate: YearMonthDay
@@ -32,7 +32,7 @@ public struct Diary {
         }
     }
     
-    public enum Action: BindableAction {
+    public enum Action: BindableAction, Equatable, Sendable {
         case didAppear
         case didTapEntryCard(Entry)
         case didTapSettingButton
@@ -54,7 +54,7 @@ public struct Diary {
         case destination(PresentationAction<Destination.Action>)
     }
     
-    @Reducer
+    @Reducer(state: .equatable, .sendable, action: .equatable, .sendable)
     public enum Destination {
         case setting(Setting)
         case detail(Detail)
@@ -70,13 +70,13 @@ public struct Diary {
             case .didAppear:
                 let focusDate = state.focusDate
                 return .run { send in
-//                    guard let date = focusDate.date else {
-//                        await send(.didFetchEntriesFailed)
-//                        return
-//                    }
+                    //                    guard let date = focusDate.date else {
+                    //                        await send(.didFetchEntriesFailed)
+                    //                        return
+                    //                    }
                     
-//                    let entries = try await diary.fetch(date)
-//                    await send(.didFetchEntry(entries))
+                    //                    let entries = try await diary.fetch(date)
+                    //                    await send(.didFetchEntry(entries))
                 }
                 
             case let .didFetchEntry(entries):
@@ -92,13 +92,13 @@ public struct Diary {
                 state.focusDate = focusDate
                 state.isPresented.toggle()
                 return .run { send in
-//                    guard let date = focusDate.date else {
-//                        await send(.didFetchEntriesFailed)
-//                        return
-//                    }
+                    //                    guard let date = focusDate.date else {
+                    //                        await send(.didFetchEntriesFailed)
+                    //                        return
+                    //                    }
                     
-//                    let entries = try await diary.fetch(date)
-//                    await send(.didFetchEntry(entries))
+                    //                    let entries = try await diary.fetch(date)
+                    //                    await send(.didFetchEntry(entries))
                 } catch: { _, send in
                     await send(.didFetchEntriesFailed)
                 }
@@ -128,7 +128,7 @@ public struct Diary {
                 state.uid  = ""
                 state.diaryName = ""
                 return .run { send in
-//                    try await user.invalidate()
+                    //                    try await user.invalidate()
                     await dismiss()
                 } catch: { error, send in
                     print("Sign out failed miserably: \(error)")

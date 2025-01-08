@@ -35,11 +35,11 @@ public struct Registration: Sendable {
     }
     
     public enum Action: ViewAction, Sendable, Equatable {
-        case view(ViewAction)
-        case delegate(DelegateAction)
-        case `internal`(InternalAction)
+        case view(ViewActions)
+        case delegate(DelegateActions)
+        case `internal`(InternalActions)
         
-        public enum ViewAction: BindableAction, Sendable, Equatable {
+        public enum ViewActions: BindableAction, Sendable, Equatable {
             case didTapSignUpWithEmail
             
             case didTapNavigateToBack
@@ -48,14 +48,15 @@ public struct Registration: Sendable {
             case binding(BindingAction<State>)
         }
         
-        public enum InternalAction: Sendable, Equatable {
+        public enum InternalActions: Sendable, Equatable {
             case didRequestEmailSignUp
             
             case didSucceedSignUp(String)
             case didFailFeatureError(Registration.FeatureError)
         }
         
-        public enum DelegateAction: Sendable, Equatable {
+        @CasePathable
+        public enum DelegateActions: Sendable, Equatable {
             case navigateToSetUp
             case navigateToDiary
             case navigateToSignIn
@@ -85,7 +86,7 @@ public struct Registration: Sendable {
                 switch action {
                 case .didRequestEmailSignUp:
                     return .run { send in
-                      
+                        
                     }
                 case .didSucceedSignUp(let userId):
                     state.uid = userId

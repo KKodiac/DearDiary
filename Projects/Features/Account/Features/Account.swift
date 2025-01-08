@@ -8,7 +8,7 @@ import SwiftUI
 public struct Account {
     public init() { }
     @ObservableState
-    public struct State: Equatable {
+    public struct State: Sendable, Equatable {
         var signIn: SignIn.State
         
         @Presents var destination: Destination.State?
@@ -33,7 +33,7 @@ public struct Account {
         }
     }
     
-    public enum Action: ViewAction, Equatable {
+    public enum Action: ViewAction, Sendable, Equatable {
         case destination(PresentationAction<Destination.Action>)
         
         case view(ViewActions)
@@ -41,7 +41,7 @@ public struct Account {
         case `internal`(InternalActions)
         
         
-        public enum ViewActions: BindableAction, Equatable {
+        public enum ViewActions: BindableAction, Sendable, Equatable {
             case didAppear
             case didReceiveOpenURL(URL)
             case didTapSignInWithGoogle
@@ -52,11 +52,12 @@ public struct Account {
             case binding(BindingAction<State>)
         }
         
-        public enum DelegateActions: Equatable {
+        @CasePathable
+        public enum DelegateActions: Sendable, Equatable {
             case navigateToDiary
         }
         
-        public enum InternalActions: Equatable {
+        public enum InternalActions: Sendable, Equatable {
             case signIn(SignIn.Action)
             
             case didThrowError(FeatureError)
@@ -64,7 +65,7 @@ public struct Account {
     }
     
     
-    @Reducer(state: .equatable, action: .equatable)
+    @Reducer(state: .equatable, .sendable, action: .equatable, .sendable)
     public enum Destination {
         case signIn(Authentication)
         case signUp(Registration)
@@ -158,7 +159,7 @@ extension Account {
             switch error {
                 case let error as SignIn.FeatureError:
                     self = .signInThrewError(error)
-                case let error as FirebaseAuthError:
+                case _ as FirebaseAuthError:
                     self = .authClientFailedToConfigure
             default:
                 self = FeatureError.unknown

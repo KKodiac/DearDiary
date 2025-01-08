@@ -4,7 +4,7 @@ import ExternalDependencies
 import FirebaseAuth
 
 final class TestableFirebaseAuthService: FirebaseAuthServiceInterface {
-    private let testableFirebaseApp = "TestFirebaseApp"
+    private static let testableFirebaseApp = "TestFirebaseApp"
     
     var clientID: String? {
         FirebaseApp.app()?.options.clientID
@@ -12,8 +12,8 @@ final class TestableFirebaseAuthService: FirebaseAuthServiceInterface {
     
     @MainActor
     func configure() throws {
-        guard FirebaseApp.app(name: testableFirebaseApp) == nil else {
-            return
+        guard FirebaseApp.app(name: Self.testableFirebaseApp) == nil else {
+            throw FirebaseAuthError.firebaseAppIsAlreadyConfigured
         }
         
         guard let path = Bundle(for: type(of: self)).path(forResource: "Info", ofType: "plist"),
@@ -22,7 +22,7 @@ final class TestableFirebaseAuthService: FirebaseAuthServiceInterface {
             return
         }
         
-        FirebaseApp.configure(name: testableFirebaseApp, options: options)
+        FirebaseApp.configure(name: Self.testableFirebaseApp, options: options)
     }
     
     func signIn(_ auth: AuthCredential) async throws -> AuthDataResult {
@@ -51,7 +51,7 @@ final class SnapshotFirebaseAuthService: FirebaseAuthServiceInterface {
     @MainActor
     func configure() throws {
         guard FirebaseApp.app(name: firebaseApp) == nil else {
-            return
+            throw FirebaseAuthError.firebaseAppIsAlreadyConfigured
         }
         
         guard let path = Bundle(for: type(of: self)).path(forResource: "Info", ofType: "plist"),

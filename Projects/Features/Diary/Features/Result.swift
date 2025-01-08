@@ -3,9 +3,9 @@ import Foundation
 import OSLog
 
 @Reducer
-public struct Result: Sendable {
+public struct Result {
     @ObservableState
-    public struct State: Sendable {
+    public struct State: Equatable, Sendable {
         var entry: Entry?
         var editable: Bool
         var title: String = ""
@@ -17,7 +17,7 @@ public struct Result: Sendable {
         }
     }
     
-    public enum Action: BindableAction, Sendable {
+    public enum Action: BindableAction, Equatable, Sendable {
         case didAppear
         case didTapEditButton
         case didTapSaveButton

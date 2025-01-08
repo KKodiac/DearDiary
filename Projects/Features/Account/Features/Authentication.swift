@@ -38,13 +38,11 @@ public struct Authentication {
     }
     
     public enum Action: ViewAction, Sendable, Equatable {
+        case view(ViewActions)
+        case delegate(DelegateActions)
+        case `internal`(InternalActions)
         
-        
-        case view(_ViewAction)
-        case delegate(DelegateAction)
-        case `internal`(InternalAction)
-        
-        public enum _ViewAction: BindableAction, Sendable, Equatable {
+        public enum ViewActions: BindableAction, Sendable, Equatable {
             case didTapSignInWithApple
             case didTapSignInWithGoogle
             case didTapSignInWithEmail
@@ -55,13 +53,14 @@ public struct Authentication {
             case binding(BindingAction<State>)
         }
         
-        public enum DelegateAction: Sendable, Equatable {
+        @CasePathable
+        public enum DelegateActions: Sendable, Equatable {
             case navigateToSetUp
             case navigateToDiary
             case navigateToSignUp
         }
         
-        public enum InternalAction: Sendable, Equatable {
+        public enum InternalActions: Sendable, Equatable {
             case signIn(SignIn.Action)
         }
     }
@@ -87,12 +86,12 @@ public struct Authentication {
                     
                 case .didTapSignInWithEmail:
                     return SignIn()
-                            .signInWithEmail(
-                                state: &state.signIn,
-                                email: state.email,
-                                password: state.password
-                            )
-                            .map { Action.internal(.signIn($0)) }
+                        .signInWithEmail(
+                            state: &state.signIn,
+                            email: state.email,
+                            password: state.password
+                        )
+                        .map { Action.internal(.signIn($0)) }
                     
                 case .didTapNavigateToBack:
                     return .run { send in
@@ -136,9 +135,10 @@ public struct SignIn: Sendable {
     }
     
     public enum Action : Sendable, Equatable {
-        case delegate(DelegateAction)
+        case delegate(DelegateActions)
         
-        public enum DelegateAction: Sendable, Equatable {
+        @CasePathable
+        public enum DelegateActions: Sendable, Equatable {
             case navigateToDiary
             case navigateToSetup
             case didThrowError(FeatureError)

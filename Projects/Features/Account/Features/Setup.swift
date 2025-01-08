@@ -28,11 +28,11 @@ public struct Setup: Sendable {
     }
     
     public enum Action: ViewAction, Sendable, Equatable {
-        case view(ViewAction)
-        case delegate(DelegateAction)
-        case `internal`(InternalAction)
+        case view(ViewActions)
+        case delegate(DelegateActions)
+        case `internal`(InternalActions)
 
-        public enum ViewAction: BindableAction, Sendable, Equatable {
+        public enum ViewActions: BindableAction, Sendable, Equatable {
             case didAppear
             case didTapPicker(Personality)
             case didTapGetStarted
@@ -40,11 +40,12 @@ public struct Setup: Sendable {
             case binding(_ action: BindingAction<State>)
         }
         
-        public enum DelegateAction: Sendable, Equatable {
+        @CasePathable
+        public enum DelegateActions: Sendable, Equatable {
             case navigateToDiary
         }
         
-        public enum InternalAction: Sendable, Equatable { }
+        public enum InternalActions: Sendable, Equatable { }
     }
     
     public var body: some ReducerOf<Self> {

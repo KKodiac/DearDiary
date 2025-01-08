@@ -4,20 +4,18 @@ import Combine
 import OSLog
 
 @Reducer
-public struct Setting: Sendable {
+public struct Setting {
     public init() { }
     @ObservableState
-    public struct State: Sendable {
+    public struct State: Equatable, Sendable {
         
     }
     
-    public enum Action: Sendable {
+    public enum Action: Equatable, Sendable {
         
     }
     
     public var body: some ReducerOf<Self> {
-        Reduce { state, action in
-            return .none
-        }
+        EmptyReducer()
     }
 }

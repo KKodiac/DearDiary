@@ -37,19 +37,16 @@ struct DearDiary {
                 if state.uid.isEmpty { state.destination = .auth(Account.State()) }
                 if !state.diaryName.isEmpty { state.destination = .diary(Diary.State()) }
                 return .none
-            case .destination(.presented(.auth(.delegate(.navigateToDiary)))):
+            case \.destination.auth.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
                 return .none
-            case .destination(.presented(.auth(.destination(
-                .presented(.signUp(.delegate(.navigateToDiary))))))):
+            case \.destination.auth.destination.signUp.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
                 return .none
-            case .destination(.presented(.auth(.destination(
-                .presented(.signIn(.delegate(.navigateToDiary))))))):
+            case \.destination.auth.destination.signIn.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
                 return .none
-            case .destination(.presented(.auth(.destination(
-                .presented(.setUp(.delegate(.navigateToDiary))))))):
+            case \.destination.auth.destination.setUp.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
                 return .none
             default:
@@ -62,7 +59,7 @@ struct DearDiary {
         }
     }
     
-    @Reducer
+    @Reducer(state: .equatable, .sendable, action: .equatable, .sendable)
     enum Destination {
         case auth(Account)
         case diary(Diary)

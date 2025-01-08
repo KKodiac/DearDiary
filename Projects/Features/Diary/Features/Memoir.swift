@@ -7,7 +7,7 @@ import SwiftUI
 public struct Memoir {
     public init() {}
     @ObservableState
-    public struct State {
+    public struct State: Equatable, Sendable {
         @Shared(.appStorage("diary_name")) var diaryName: String = "Diary"
         
         var memoirText: String = "Hi"
@@ -22,7 +22,7 @@ public struct Memoir {
         @Presents var destination: Destination.State?
     }
     
-    public enum Action: BindableAction {
+    public enum Action: BindableAction, Equatable, Sendable {
         case didAppear
         case didTapNavigateToBack
         
@@ -33,14 +33,14 @@ public struct Memoir {
         
         case didReceiveDialogue(Dialogue)
         case didReceiveEntry(Entry)
-        case didReceiveError(any Error)
+        case didReceiveError(FeatureError)
         case didReceiveCancelled
         
         case binding(BindingAction<State>)
         case destination(PresentationAction<Destination.Action>)
     }
     
-    @Reducer
+    @Reducer(state: .equatable, .sendable, action: .equatable, .sendable)
     public enum Destination {
         case result(Result)
     }
@@ -100,7 +100,7 @@ public struct Memoir {
 //                        await send(.didReceiveEntry(entry))
 //                    }
                 } catch: { error, send in
-                    await send(.didReceiveError(error))
+                    
                 }
                 
             case .didReceiveEntry(let entry):
@@ -123,5 +123,11 @@ public struct Memoir {
                 return .none
             }
         }
+    }
+}
+
+extension Memoir {
+    public enum FeatureError: LocalizedError, Equatable, Sendable {
+        
     }
 }

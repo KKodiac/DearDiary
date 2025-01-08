@@ -4,7 +4,7 @@ import ComposableArchitecture
 public struct Detail {
     public init() { }
     @ObservableState
-    public struct State {
+    public struct State: Equatable, Sendable {
         var entry: Entry
         var editable: Bool
         public init(
@@ -16,7 +16,7 @@ public struct Detail {
         }
     }
     
-    public enum Action: BindableAction {
+    public enum Action: BindableAction, Equatable, Sendable {
         case didTapBackButton
         
         case didTapSaveButton
