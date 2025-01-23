@@ -14,7 +14,7 @@ public struct Memoir {
         var initialized: Bool = false
         var dialogues: [Dialogue] = []
         var progress: Double = 0.0
-        var threadId: String?
+        var threadID: String?
         var dialogue: String = ""
         var showHeader: Bool = false
         var composing: Bool = false

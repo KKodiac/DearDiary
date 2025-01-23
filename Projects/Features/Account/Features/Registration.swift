@@ -88,8 +88,8 @@ public struct Registration: Sendable {
                     return .run { send in
                         
                     }
-                case .didSucceedSignUp(let userId):
-                    state.uid = userId
+                case .didSucceedSignUp(let userID):
+                    state.uid = userID
                     return .none
                 case .didFailFeatureError(_):
                     return .none
