@@ -2,5 +2,9 @@ import Dependencies
 import Foundation
 
 public struct AssistantClient {
-    public init() { }
+    private let assistants: AssistantsServiceInterface
+    
+    public init(assistantsService: AssistantsServiceInterface) {
+        self.assistants = assistantsService
+    }
 }
