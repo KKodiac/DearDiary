@@ -8,3 +8,9 @@ public struct AssistantClient {
         self.assistants = assistantsService
     }
 }
+
+extension AssistantClient: DependencyKey {
+    public static let liveValue = AssistantClient(
+        assistantsService: AssistantsService()
+    )
+}

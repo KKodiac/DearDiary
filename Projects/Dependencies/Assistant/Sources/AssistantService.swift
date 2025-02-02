@@ -6,10 +6,8 @@ extension AssistantsService: AssistantsServiceInterface {
     func startMessage(with content: String) async throws -> ThreadRunResponseDTO {
         try await withCheckedThrowingContinuation { continuation in
             let dto = ThreadRunRequestDTO(
-                assistantID: AssistantsService.defaultAssistantID,
-                thread: Thread(message: [
-                    Messages(role: .user, content: content)
-                ])
+                assistantID: configuration.assistantID,
+                text: content
             )
             
             provider.request(.target(RunsRouter.createThreadAndRun(parameter: dto))) { completion in
@@ -19,14 +17,11 @@ extension AssistantsService: AssistantsServiceInterface {
                         let filteredResponse = try response.filterSuccessfulStatusCodes()
                         let mappedResponse = try filteredResponse.map(ThreadRunResponseDTO.self)
                         
-                        try self.configure(mappedResponse.threadID)
+                        try self.configure(with: mappedResponse.threadID)
                         
                         continuation.resume(with: .success(mappedResponse))
-                    } catch let error as AssistantError {
-                        continuation.resume(throwing: error)
                     } catch {
-                        let assistantError = AssistantError(error: RunsAssistantError(error: error))
-                        continuation.resume(throwing: assistantError)
+                        continuation.resume(throwing: AssistantError(error: error))
                     }
                 case .failure(let error):
                     continuation.resume(throwing: error)
@@ -34,13 +29,41 @@ extension AssistantsService: AssistantsServiceInterface {
             }
         }
     }
+    
+    func sendMessage(with content: String) async throws -> MessagesResponseDTO {
+        try await withCheckedThrowingContinuation { continuation in
+            let dto = MessagesRequestDTO(role: .user, content: content)
+            let result = Result { try configuration.fetchThreadID() }
+            
+            switch result {
+            case .success(let threadID):
+                provider.request(.target(MessagesRouter.createMessage(threadID, parameter: dto))) { completion in
+                    switch completion {
+                    case .success(let response):
+                        do {
+                            let filteredResponse = try response.filterSuccessfulStatusCodes()
+                            let mappedResponse = try filteredResponse.map(MessagesResponseDTO.self)
+                            continuation.resume(with: .success(mappedResponse))
+                        } catch {
+                            let assistantError = AssistantError(error: error)
+                            continuation.resume(throwing: assistantError)
+                        }
+                    case .failure(let error):
+                        continuation.resume(throwing: AssistantError(error: error))
+                    }
+                }
+            case .failure(let error):
+                continuation.resume(throwing: AssistantError(error: error))
+            }
+        }
+    }
 }
 
 extension AssistantsService {
-    func configure(_ currentThreadID: String) throws {
-        guard self.currentThreadID == nil else {
-            throw AssistantError.activeThreadFound
+    func configure(with newThreadID: String) throws {
+        guard configuration.isAssistantThreadActive else {
+            throw AssistantError.configurationFailed
         }
-        self.currentThreadID = currentThreadID
+        self.configuration.update(threadID: newThreadID)
     }
 }

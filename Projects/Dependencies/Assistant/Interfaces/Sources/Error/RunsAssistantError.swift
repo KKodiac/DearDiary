@@ -18,7 +18,7 @@ public enum RunsAssistantError: LocalizedError {
     }
     
     public var errorMessage: String {
-        return errorDescription ?? "Unknown google auth error: \(self.localizedDescription)"
+        return errorDescription ?? "Unknown runs assistant error: \(self.localizedDescription)"
     }
     
     public init(error: Error) {

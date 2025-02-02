@@ -1,4 +1,3 @@
-import Foundation
 import ExternalDependencies
 
 public struct ThreadRunResponseDTO: Decodable {

@@ -1,5 +1,5 @@
-import Foundation
 import Dependencies
+import Foundation
 
 public struct AuthClient {
     private let firebase: FirebaseAuthServiceInterface

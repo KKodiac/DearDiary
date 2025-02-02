@@ -1,12 +1,18 @@
 import Foundation
+import Moya
 
 public enum AssistantError: LocalizedError, Equatable {
     public static func == (lhs: AssistantError, rhs: AssistantError) -> Bool {
         return lhs.localizedDescription == rhs.localizedDescription
     }
     
-    case activeThreadFound
+    case networkResponseError(MoyaError)
+    case responseDecodingError(DecodingError)
+    
+    case activeThreadNotFound
+    case configurationFailed
     case runAssistantError(RunsAssistantError)
+    case messageAssistantError(MessagesAssistantError)
     case unknownError(Error)
     
     public var errorCode: String? {
@@ -18,10 +24,18 @@ public enum AssistantError: LocalizedError, Equatable {
     
     public var errorMessage: String {
         switch self {
-        case .activeThreadFound:
-            return "activeThreadFound"
+        case .networkResponseError:
+            return "networkResponseError"
+        case .responseDecodingError:
+            return "responseDecodingError"
+        case .activeThreadNotFound:
+            return "activeThreadNotFound"
+        case .configurationFailed:
+            return "configurationFailed"
         case .runAssistantError(let runAssistantError):
             return "runAssistantError: \(runAssistantError.localizedDescription)"
+        case .messageAssistantError(let messageAssistantError):
+            return "messageAssistantError: \(messageAssistantError.localizedDescription)"
         case .unknownError(let error):
             return "unknown authError: \(error.localizedDescription)"
         }
@@ -38,6 +52,16 @@ public enum AssistantError: LocalizedError, Equatable {
         switch error {
         case let error as RunsAssistantError:
             self = AssistantError.runAssistantError(error)
+        case let error as MessagesAssistantError:
+            self = AssistantError.messageAssistantError(error)
+        case let error as MoyaError:
+            self = .networkResponseError(error)
+        case let error as DecodingError:
+            self = .responseDecodingError(error)
+        case let error as AssistantConfigurationError:
+            self = AssistantError.configurationFailed
+        case is Self:
+            self = error as! Self
         default:
             self = AssistantError.unknownError(error)
         }
