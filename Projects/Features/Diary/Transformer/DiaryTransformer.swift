@@ -26,10 +26,10 @@ internal struct DiaryTransformer {
     private var name: NSValueTransformerName? = nil
     
     internal mutating func configure<Value: ValueMappable>(for value: Value) throws {
-        if let value = value as? Entry {
+        if value is Entry {
             self.name = EntryValueTransformer.name
         }
-        if let value = value as? Dialogue {
+        if value is Dialogue {
             self.name = DialogueValueTransformer.name
         }
         throw TransformerError.undefinedValueTransformer

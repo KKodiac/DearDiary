@@ -68,7 +68,7 @@ public struct Diary {
         Reduce { state, action in
             switch action {
             case .didAppear:
-                let focusDate = state.focusDate
+                _ = state.focusDate
                 return .run { send in
                     //                    guard let date = focusDate.date else {
                     //                        await send(.didFetchEntriesFailed)
@@ -128,7 +128,6 @@ public struct Diary {
                 state.uid  = ""
                 state.diaryName = ""
                 return .run { send in
-                    //                    try await user.invalidate()
                     await dismiss()
                 } catch: { error, send in
                     print("Sign out failed miserably: \(error)")
