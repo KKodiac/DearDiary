@@ -6,7 +6,6 @@ import SwiftUI
 
 @Reducer
 public struct Account {
-    public init() { }
     @ObservableState
     public struct State: Sendable, Equatable {
         var signIn: SignIn.State
@@ -67,8 +66,8 @@ public struct Account {
     
     @Reducer(state: .equatable, .sendable, action: .equatable, .sendable)
     public enum Destination {
-        case signIn(Authentication)
-        case signUp(Registration)
+        case authentication(Authentication)
+        case registration(Registration)
         case setUp(Setup)
     }
     
@@ -84,10 +83,8 @@ public struct Account {
                 case .didAppear:
                     return .run(priority: .userInitiated) { @MainActor send in
                         authClient.configure()
-                    } catch: { error, send in
-                        let error = FeatureError(error: error)
-                        await send(.internal(.didThrowError(error)))
                     }
+                    
                 case .didReceiveOpenURL(_):
                     return .none
                     
@@ -102,11 +99,11 @@ public struct Account {
                         .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithEmail:
-                    state.destination = .signIn(Authentication.State(clientUID: state.$clientUID))
+                    state.destination = .authentication(Authentication.State(clientUID: state.$clientUID))
                     return .none
                     
                 case .didTapSignUpWithEmail:
-                    state.destination = .signUp(Registration.State())
+                    state.destination = .registration(Registration.State())
                     return .none
                     
                 case .binding:
@@ -135,15 +132,25 @@ public struct Account {
             
             NestedAction(\.destination) { state, action in
                 switch action {
-                case  \.signUp.delegate.navigateToSignIn:
-                    state.destination = .signIn(Authentication.State(clientUID: state.$clientUID))
+                case \.authentication.delegate.navigateToSignUp:
+                    state.destination = .registration(Registration.State())
                     return .none
+                case \.authentication.delegate.navigateToSetUp:
+                    state.destination = .setUp(Setup.State())
+                    return .none
+                case \.authentication.delegate.navigateToDiary:
+                    return .send(.delegate(.navigateToDiary))
+                case  \.registration.delegate.navigateToSignIn:
+                    state.destination = .authentication(Authentication.State(clientUID: state.$clientUID))
+                    return .none
+                case \.registration.delegate.navigateToSetUp:
+                    state.destination = .setUp(Setup.State())
+                    return .none
+                case \.setUp.delegate.navigateToDiary:
+                    return .send(.delegate(.navigateToDiary))
                 case .dismiss:
                     return .none
-                case \.signIn.delegate.navigateToSignUp:
-                    state.destination = .signUp(Registration.State())
-                    return .none
-                case .presented(_):
+                case .presented:
                     return .none
                 }
             }
@@ -160,6 +167,8 @@ public struct Account {
         }
         ._printChanges()
     }
+    
+    public init() { }
 }
 
 extension Account {

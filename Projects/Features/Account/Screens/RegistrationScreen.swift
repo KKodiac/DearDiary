@@ -20,7 +20,7 @@ struct RegistrationScreen: View {
             .primaryHorizontalPadding()
         }
         .toolbar { toolbarContent }
-        .alert(isPresented: $store.isPresented, error: store.error) { errorAlert }
+        .alert($store.scope(state: \.alert, action: \.alert))
     }
     
     private var titleSection: some View {

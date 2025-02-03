@@ -12,7 +12,7 @@ public struct SignIn {
     
     @Dependency(\.authClient) private var authClient
     
-    public struct State: Equatable {
+    public struct State: Sendable, Equatable {
         @Shared var isInitialUser: Bool
         @Shared var clientUID: String
         

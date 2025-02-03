@@ -40,10 +40,7 @@ struct DearDiary {
             case \.destination.auth.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
                 return .none
-            case \.destination.auth.destination.signUp.delegate.navigateToDiary:
-                state.destination = .diary(Diary.State())
-                return .none
-            case \.destination.auth.destination.signIn.delegate.navigateToDiary:
+            case \.destination.auth.destination.authentication.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
                 return .none
             case \.destination.auth.destination.setUp.delegate.navigateToDiary:

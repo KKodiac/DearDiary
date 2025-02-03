@@ -107,7 +107,7 @@ public struct Authentication {
                 case .didTapNavigateToSignUp:
                     return .send(.delegate(.navigateToSignUp))
                     
-                case .binding(_):
+                case .binding:
                     return .none
                 }
             }

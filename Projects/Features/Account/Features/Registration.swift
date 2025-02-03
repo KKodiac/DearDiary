@@ -1,19 +1,25 @@
 import ComposableArchitecture
 import ExternalDependencies
 import Foundation
+import OSLog
 
 @Reducer
 public struct Registration: Sendable {
-    public init() { }
+    private let logger = Logger(
+        subsystem: "com.bibumtiger.deardiary",
+        category: "Registration"
+    )
     @ObservableState
     public struct State: Sendable, Equatable {
+        var signUp: SignUp.State
+        @Presents var alert: AlertState<Action.Alert>?
+        
         @Shared var uid: String
         var email: String
         var name: String
         var password: String
         var confirmPassword: String
         var isPresented: Bool
-        var error: Registration.FeatureError?
         
         init(
             uid: String = "",
@@ -30,11 +36,13 @@ public struct Registration: Sendable {
             self.password = password
             self.confirmPassword = confirmPassword
             self.isPresented = isPresented
-            self.error = error
+            self.signUp = SignUp.State()
         }
     }
     
     public enum Action: ViewAction, Sendable, Equatable {
+        case alert(PresentationAction<Alert>)
+        
         case view(ViewActions)
         case delegate(DelegateActions)
         case `internal`(InternalActions)
@@ -49,22 +57,23 @@ public struct Registration: Sendable {
         }
         
         public enum InternalActions: Sendable, Equatable {
-            case didRequestEmailSignUp
-            
-            case didSucceedSignUp(String)
-            case didFailFeatureError(Registration.FeatureError)
+            case signUp(SignUp.Action)
         }
         
         @CasePathable
         public enum DelegateActions: Sendable, Equatable {
             case navigateToSetUp
-            case navigateToDiary
             case navigateToSignIn
+        }
+        
+        @CasePathable
+        public enum Alert: Sendable {
+            case signUpError
         }
     }
     
     @Dependency(\.dismiss) private var dismiss
-    
+    @Dependency(\.authClient) private var authClient
     public var body: some ReducerOf<Self> {
         BindingReducer(action: \.view)
         
@@ -72,7 +81,14 @@ public struct Registration: Sendable {
             NestedAction(\.view) { state, action in
                 switch action {
                 case .didTapSignUpWithEmail:
-                    return .send(.internal(.didRequestEmailSignUp))
+                    return SignUp()
+                        .signUpWithEmail(
+                            state: &state.signUp,
+                            email: state.email,
+                            password: state.password,
+                            confirmPassword: state.confirmPassword
+                        )
+                        .map { Action.internal(.signUp($0)) }
                 case .didTapNavigateToBack:
                     return .run { _ in await dismiss() }
                 case .didTapNavigateToSignIn:
@@ -84,18 +100,23 @@ public struct Registration: Sendable {
             
             NestedAction(\.internal) { state, action in
                 switch action {
-                case .didRequestEmailSignUp:
-                    return .run { send in
-                        
+                case .signUp(.delegate(.navigateToSetup)):
+                    return .send(.delegate(.navigateToSetUp))
+                case .signUp(.delegate(.didThrowError(let error))):
+                    state.alert = AlertState {
+                        TextState("Sign Up Error")
+                    } actions: {
+                        ButtonState(role: .cancel) {
+                            TextState("Ok")
+                        }
+                    } message: {
+                        TextState("Sign Up Attempt Failed: \(error.localizedDescription)")
                     }
-                case .didSucceedSignUp(let userID):
-                    state.uid = userID
-                    return .none
-                case .didFailFeatureError(_):
                     return .none
                 }
             }
         }
+        .ifLet(\.$alert, action: \.alert)
     }
 }
 

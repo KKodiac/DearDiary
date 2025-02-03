@@ -75,8 +75,8 @@ public struct AccountView: View {
             }
             .navigationDestination(
                 item: $store.scope(
-                    state: \.destination?.signIn,
-                    action: \.destination.signIn
+                    state: \.destination?.authentication,
+                    action: \.destination.authentication
                 )
             ) { store in
                 AuthenticationScreen(store: store)
@@ -84,8 +84,8 @@ public struct AccountView: View {
             }
             .navigationDestination(
                 item: $store.scope(
-                    state: \.destination?.signUp,
-                    action: \.destination.signUp
+                    state: \.destination?.registration,
+                    action: \.destination.registration
                 )
             ) { store in
                 RegistrationScreen(store: store)

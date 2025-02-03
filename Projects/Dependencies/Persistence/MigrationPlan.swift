@@ -13,5 +13,4 @@ enum MigrationPlan: SchemaMigrationPlan {
 public typealias EntryModel = PersistenceSchemaV1.EntryModel
 public typealias UserModel = PersistenceSchemaV1.UserModel
 public typealias DialogueModel = PersistenceSchemaV1.DialogueModel
-
 public typealias Role = PersistenceSchemaV1.Role
