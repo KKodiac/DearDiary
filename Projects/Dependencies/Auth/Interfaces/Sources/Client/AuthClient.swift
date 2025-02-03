@@ -5,16 +5,19 @@ public struct AuthClient {
     private let firebase: FirebaseAuthServiceInterface
     private let apple: AppleAuthServiceInterface
     private let google: GoogleAuthServiceInterface
+    private let validator: ValidationServiceInterface
     
     public init(
         // MARK: - Initializer Auth Services
         firebaseAuthService: FirebaseAuthServiceInterface,
         appleAuthService: AppleAuthServiceInterface,
-        googleAuthService: GoogleAuthServiceInterface
+        googleAuthService: GoogleAuthServiceInterface,
+        validator: ValidationServiceInterface
     ) {
         self.firebase = firebaseAuthService
         self.apple = appleAuthService
         self.google = googleAuthService
+        self.validator = validator
     }
     
     @MainActor
@@ -52,9 +55,28 @@ public struct AuthClient {
     }
     
     @discardableResult
-    public func signInWithEmail(email: String, password: String) async throws -> AuthDataResult {
+    public func signInWithEmail(
+        email: String,
+        password: String
+    ) async throws -> AuthDataResult {
         do {
             let result = try await firebase.signIn(email: email, password: password)
+            
+            return result
+        } catch {
+            throw AuthError(error: error)
+        }
+    }
+    
+    @discardableResult
+    public func signUpWithEmail(
+        email: String,
+        password: String,
+        confirmPassword: String
+    ) async throws -> AuthDataResult {
+        do {
+            try validator.validate(password: password, with: confirmPassword)
+            let result = try await firebase.signUp(email: email, password: password)
             
             return result
         } catch {
@@ -67,7 +89,8 @@ extension AuthClient: DependencyKey {
     public static let liveValue = AuthClient(
         firebaseAuthService: FirebaseAuthService(),
         appleAuthService: AppleAuthService(),
-        googleAuthService: GoogleAuthService()
+        googleAuthService: GoogleAuthService(),
+        validator: ValidationService()
     )
 }
 

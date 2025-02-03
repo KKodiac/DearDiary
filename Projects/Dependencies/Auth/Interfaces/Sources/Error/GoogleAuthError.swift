@@ -28,7 +28,8 @@ public enum GoogleAuthError: LocalizedError {
     
     public init(error: Error) {
         switch (error as NSError).code {
-            default:        self = .otherError(error)
+        default:
+            self = .otherError(error)
         }
     }
 }

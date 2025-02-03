@@ -35,6 +35,11 @@ final class TestableFirebaseAuthService: FirebaseAuthServiceInterface {
         return try await authApp.signIn(withEmail: email, password: password)
     }
     
+    func signUp(email: String, password: String) async throws -> AuthDataResult {
+        let authApp = FirebaseAuth.Auth.auth()
+        return try await authApp.createUser(withEmail: email, password: password)
+    }
+    
     func signOut() throws {
         let authApp = FirebaseAuth.Auth.auth()
         try authApp.signOut()
@@ -73,6 +78,11 @@ final class SnapshotFirebaseAuthService: FirebaseAuthServiceInterface {
         return try await authApp.signIn(withEmail: email, password: password)
     }
     
+    func signUp(email: String, password: String) async throws -> AuthDataResult {
+        let authApp = FirebaseAuth.Auth.auth()
+        return try await authApp.createUser(withEmail: email, password: password)
+    }
+    
     func signOut() throws {
         let authApp = FirebaseAuth.Auth.auth()
         try authApp.signOut()
@@ -83,12 +93,14 @@ extension AuthClient: TestDependencyKey {
     public static let testValue = AuthClient(
         firebaseAuthService: TestableFirebaseAuthService(),
         appleAuthService: AppleAuthService(),
-        googleAuthService: GoogleAuthService()
+        googleAuthService: GoogleAuthService(),
+        validator: ValidationService()
     )
     
     public static let snapshotValue = AuthClient(
         firebaseAuthService: SnapshotFirebaseAuthService(),
         appleAuthService: AppleAuthService(),
-        googleAuthService: GoogleAuthService()
+        googleAuthService: GoogleAuthService(),
+        validator: ValidationService()
     )
 }
