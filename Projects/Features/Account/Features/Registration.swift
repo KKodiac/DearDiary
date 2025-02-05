@@ -14,7 +14,6 @@ public struct Registration: Sendable {
         var signUp: SignUp.State
         @Presents var alert: AlertState<Action.Alert>?
         
-        @Shared var uid: String
         var email: String
         var name: String
         var password: String
@@ -22,7 +21,6 @@ public struct Registration: Sendable {
         var isPresented: Bool
         
         init(
-            uid: String = "",
             email: String = "",
             name: String = "",
             password: String = "",
@@ -30,7 +28,6 @@ public struct Registration: Sendable {
             isPresented: Bool = false,
             error: Registration.FeatureError? = nil
         ) {
-            self._uid = Shared(wrappedValue: uid, .appStorage("uid"))
             self.email = email
             self.name = name
             self.password = password
@@ -74,6 +71,7 @@ public struct Registration: Sendable {
     
     @Dependency(\.dismiss) private var dismiss
     @Dependency(\.authClient) private var authClient
+    
     public var body: some ReducerOf<Self> {
         BindingReducer(action: \.view)
         

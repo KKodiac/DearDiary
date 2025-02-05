@@ -17,6 +17,7 @@ public struct Account {
         var error: FeatureError? = nil
         
         public init(
+            destination: Destination.State? = nil,
             isInitialUser: @autoclosure () -> Bool = true,
             clientUID: @autoclosure () -> String = ""
         ) {
@@ -28,6 +29,7 @@ public struct Account {
                 wrappedValue: clientUID(),
                 .appStorage("client_uid")
             )
+            self.destination = destination
             self.signIn = SignIn.State(clientUID: self._clientUID)
         }
     }

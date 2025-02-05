@@ -12,9 +12,8 @@ public struct Setup: Sendable {
         
         @Shared var name: String
         @Shared var personality: Personality
-        @Shared(.appStorage("uid")) var uid = ""
         
-        init(
+        public init(
             expanded: Bool = false,
             personalities: [Personality] = [],
             name: String = "",

@@ -8,7 +8,7 @@ public struct Diary {
     public init() { }
     @ObservableState
     public struct State: Equatable, Sendable {
-        @Shared(.appStorage("uid")) var uid = ""
+        @Shared(.appStorage("client_uid")) var uid = ""
         @Shared(.appStorage("diary_name")) var diaryName = ""
         var focusDate: YearMonthDay
         var isPresented: Bool

@@ -9,7 +9,7 @@ import GoogleSignIn
 struct DearDiary {
     @ObservableState
     struct State: Sendable {
-        @Shared(.appStorage("uid")) var uid = ""
+        @Shared(.appStorage("client_uid")) var uid = ""
         @Shared(.appStorage("diary_name")) var diaryName = ""
         
         
@@ -35,7 +35,8 @@ struct DearDiary {
                 }.animation(.easeIn)
             case .navigateToFeature:
                 if state.uid.isEmpty { state.destination = .auth(Account.State()) }
-                if !state.diaryName.isEmpty { state.destination = .diary(Diary.State()) }
+                else if state.diaryName.isEmpty { state.destination = .auth(Account.State(destination: .setUp(Setup.State()))) }
+                else if !state.diaryName.isEmpty && state.uid.isEmpty { state.destination = .diary(Diary.State()) }
                 return .none
             case \.destination.auth.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
