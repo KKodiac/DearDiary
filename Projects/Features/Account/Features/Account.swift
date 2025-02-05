@@ -13,17 +13,23 @@ public struct Account {
         @Presents var destination: Destination.State?
         @Shared var isInitialUser: Bool
         @Shared var clientUID: String
+        @Shared var diaryName: String
         
         var error: FeatureError? = nil
         
         public init(
             destination: Destination.State? = nil,
             isInitialUser: @autoclosure () -> Bool = true,
-            clientUID: @autoclosure () -> String = ""
+            clientUID: @autoclosure () -> String = "",
+            diaryName: @autoclosure () -> String = ""
         ) {
             self._isInitialUser = Shared(
                 wrappedValue: isInitialUser(),
                 .appStorage("is_initial_user")
+            )
+            self._diaryName = Shared(
+                wrappedValue: diaryName(),
+                .appStorage("diary_name")
             )
             self._clientUID = Shared(
                 wrappedValue: clientUID(),
@@ -160,7 +166,7 @@ public struct Account {
         .ifLet(\.$destination, action: \.destination)
         .onChange(of: \.clientUID) { oldValue, newValue in
             Reduce { state, action in
-                guard state.isInitialUser else {
+                guard state.isInitialUser || state.diaryName.isEmpty else {
                     return .send(.delegate(.navigateToDiary))
                 }
                 state.destination = .setUp(Setup.State())

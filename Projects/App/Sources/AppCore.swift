@@ -36,7 +36,7 @@ struct DearDiary {
             case .navigateToFeature:
                 if state.uid.isEmpty { state.destination = .auth(Account.State()) }
                 else if state.diaryName.isEmpty { state.destination = .auth(Account.State(destination: .setUp(Setup.State()))) }
-                else if !state.diaryName.isEmpty && state.uid.isEmpty { state.destination = .diary(Diary.State()) }
+                else if !state.diaryName.isEmpty && !state.uid.isEmpty { state.destination = .diary(Diary.State()) }
                 return .none
             case \.destination.auth.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
