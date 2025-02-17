@@ -1,7 +1,7 @@
 import Foundation
 import Moya
 
-public protocol AssistantsServiceInterface {
+public protocol AssistantsServiceInterface: Sendable {
     func startMessage(with text: String) async throws -> ThreadRunResponseDTO
     func sendMessage(with text: String) async throws -> MessagesResponseDTO
 }

@@ -1,16 +1,27 @@
 import Dependencies
 import Foundation
 
-public struct AssistantClient {
+public struct AssistantClient: Sendable {
     private let assistants: AssistantsServiceInterface
     
-    public init(assistantsService: AssistantsServiceInterface) {
-        self.assistants = assistantsService
+    public var start: @Sendable (_ message: String) async throws -> ThreadRunResponseDTO
+    
+    public static func live() -> Self {
+        let assistants = AssistantsService()
+        return .init(
+            assistants: assistants,
+            start: { message in try await assistants.startMessage(with: message) }
+        )
     }
 }
 
-extension AssistantClient: DependencyKey {
-    public static let liveValue = AssistantClient(
-        assistantsService: AssistantsService()
-    )
+extension AssistantClient: DependencyKey {    
+    public static let liveValue: AssistantClient = live()
+}
+
+extension DependencyValues {
+    public var assistantClient: AssistantClient {
+        get { self[AssistantClient.self] }
+        set { self[AssistantClient.self] = newValue }
+    }
 }

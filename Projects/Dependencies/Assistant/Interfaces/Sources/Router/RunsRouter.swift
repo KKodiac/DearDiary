@@ -49,7 +49,7 @@ extension RunsRouter: DefaultTargetType {
             )
         case .createThreadAndRun(let parameter):
             return .requestParameters(
-                parameters: ["assistant_id": parameter.assistantID, "thread": parameter.thread],
+                parameters: ["assistant_id": parameter.assistantID, "thread": parameter.thread, "stream": true],
                 encoding: JSONEncoding.default
             )
         case .listRuns(_):

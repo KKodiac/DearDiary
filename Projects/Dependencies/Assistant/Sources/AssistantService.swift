@@ -2,7 +2,7 @@ import Foundation
 import Dependencies
 import Moya
 
-extension AssistantsService: AssistantsServiceInterface {
+extension AssistantsService: @unchecked Sendable, AssistantsServiceInterface {
     func startMessage(with content: String) async throws -> ThreadRunResponseDTO {
         try await withCheckedThrowingContinuation { continuation in
             let dto = ThreadRunRequestDTO(
