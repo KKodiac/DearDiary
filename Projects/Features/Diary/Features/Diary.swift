@@ -139,5 +139,6 @@ public struct Diary {
                 return .none
             }
         }
+        .ifLet(\.$destination, action: \.destination)
     }
 }

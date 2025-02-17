@@ -2,6 +2,7 @@ import Combine
 import ComposableArchitecture
 import OSLog
 import SwiftUI
+import InternalDependencies
 
 @Reducer
 public struct Memoir {
@@ -46,7 +47,7 @@ public struct Memoir {
     }
     
     @Dependency(\.dismiss) var dismiss
-    
+    @Dependency(\.assistantClient) var assistants
     public var body: some ReducerOf<Self> {
         BindingReducer()
         Reduce { state, action in
@@ -59,13 +60,22 @@ public struct Memoir {
                 withAnimation(.bouncy) { state.initialized = true }
                 
                 let message = "Hello, \(state.diaryName)"
-                state.dialogues.append(Dialogue(
-                    content: message,
-                    createdAt: .now, role: .user))
                 return .run { send in
-//                    try await diary.startAssistantThread()
-//                    let response = try await diary.talk(message)
-//                    await send(.didReceiveDialogue(response))
+                    await send(.didReceiveDialogue(
+                        Dialogue(
+                            content: message,
+                            createdAt: .now,
+                            role: .user
+                        )
+                    ))
+                    let dto = try await assistants.start(message)
+//                    await send(.didReceiveDialogue(
+//                        Dialogue(
+//                            content: dto.content,
+//                            createdAt: Date(timeIntervalSince1970: TimeInterval(dto.createAt)),
+//                            role: .assistant
+//                        )
+//                    ))
                 } catch: { error, send in
 //                    await send(.didReceiveError(error as! DiaryUseCaseErrors))
                 }
@@ -123,6 +133,7 @@ public struct Memoir {
                 return .none
             }
         }
+        .ifLet(\.$destination, action: \.destination)
     }
 }
 
