@@ -13,12 +13,12 @@ public struct MemoirScreen: View {
     
     public var body: some View {
         ZStack {
+            DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea(.container, edges: .bottom)
             VStack {
                 headerSection
                 mainContent
             }
         }
-        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
         .navigationBarBackButtonHidden()
         .toolbarRole(.navigationStack)
         .toolbarBackground(.visible, for: .navigationBar)
