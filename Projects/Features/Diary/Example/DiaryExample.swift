@@ -12,8 +12,10 @@ struct DiaryExampleApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            DiaryView(store: exampleStore)
-                .onAppear {  exampleStore.send(.didAppear) }
+            NavigationStack {
+                DiaryView(store: exampleStore)
+                    .onAppear {  exampleStore.send(.view(.didAppear)) }
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ import DesignSystem
 import SwiftUICalendar
 import SwiftUI
 
+@ViewAction(for: Diary.self)
 public struct DiaryView: View {
     @Bindable var store: StoreOf<Diary>
     @StateObject private var controller = CalendarController()
@@ -70,7 +71,7 @@ public struct DiaryView: View {
             calendarHeader
             calendarGrid
         }
-        .onAppear { store.send(.didAppear) }
+        .onAppear { send(.didAppear) }
     }
     
     private var calendarHeader: some View {
@@ -146,7 +147,7 @@ public struct DiaryView: View {
                 )
                 .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
                 .onTapGesture {
-                    store.send(.didTapCalendarDate(date))
+                    send(.didTapCalendarDate(date))
                 }
         }
     }
@@ -198,7 +199,7 @@ public struct DiaryView: View {
     
     private func entryCard(for entry: Entry) -> some View {
         Button {
-            store.send(.didTapEntryCard(entry))
+            send(.didTapEntryCard(entry))
         } label: {
             Card(title: entry.title, content: entry.content, timestamp: entry.createdAt)
         }
@@ -212,7 +213,7 @@ public struct DiaryView: View {
             HStack {
                 Spacer()
                 FloatingButton(image: DesignSystemAsset.imoji) {
-                    store.send(.didTapMemoirButton)
+                    send(.didTapMemoirButton)
                 }
             }
         }
@@ -222,17 +223,17 @@ public struct DiaryView: View {
     private var signOutAlert: some View {
         Group {
             Button("Cancel", role: .cancel) {
-                store.send(.didAlertTapCancelButton)
+                store.send(.alert(.didAlertTapCancelButton))
             }
             Button("Yes", role: .destructive) {
-                store.send(.didAlertTapAcceptButton)
+                store.send(.alert(.didAlertTapAcceptButton))
             }
         }
     }
     
     private var settingsButton: some View {
         Button {
-            store.send(.didTapNavigateToSetting)
+            send(.didTapNavigateToSetting)
         } label: {
             Image(systemName: "gear")
                 .font(.title)
