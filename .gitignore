@@ -69,7 +69,11 @@ Derived/
 ### Tuist managed dependencies ###
 Tuist/.build
 
-# Secrets file
+### Secrets file ###
 Tuist/Plugins/DependencyPlugin/ProjectDescriptionHelpers/Project+Secrets.swift
 .package.resolved
 *.resolved
+
+### VSCode ###
+.vscode/
+buildServer.json
