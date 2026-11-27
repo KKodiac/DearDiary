@@ -110,12 +110,14 @@ public struct ResultScreen: View {
         }
     }
     
+    @ViewBuilder
     private var dateTitle: some View {
-        Text(
-            "\(String(Calendar.current.component(.year, from: Date.now))).\(Calendar.current.component(.month, from: Date.now))"
-        ).bold()
+        if let entry = store.entry {
+            Text(entry.createdAt, format: .dateTime.month(.abbreviated).year())
+                .bold()
+        }
     }
-    
+
     private var saveButton: some View {
         Button {
             isEditorFocused = false

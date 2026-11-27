@@ -143,7 +143,9 @@ public struct Account {
                     
                 case .signIn(.delegate(.didThrowError(let error))):
                     state.isSubmitting = false
-                    state.error = FeatureError(error: error)
+                    if error.userMessage != nil {
+                        state.error = .signInThrewError(error)
+                    }
                     return .none
                     
                 case .didThrowError(let error):
@@ -192,6 +194,17 @@ extension Account {
         // MARK: Child Feature Errors
         case signInThrewError(SignIn.FeatureError)
         
+        var userMessage: String? {
+            switch self {
+            case .signInThrewError(let error):
+                return error.userMessage
+            case .authClientFailedToConfigure:
+                return "Sign-in is unavailable. Please try again later."
+            case .authenticationAttemptDidNotSucceed, .unknown:
+                return "Something went wrong. Please try again."
+            }
+        }
+
         public init(error: Error) {
             switch error {
                 case let error as SignIn.FeatureError:

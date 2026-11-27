@@ -54,10 +54,12 @@ struct AuthenticationScreen: View {
                 focusedField = nil
                 send(.didTapSignInWithGoogle)
             }
+            .accessibilityLabel("Sign in with Google")
             CircularButton(image: DesignSystemAsset.apple) {
                 focusedField = nil
                 send(.didTapSignInWithApple)
             }
+            .accessibilityLabel("Sign in with Apple")
         }
     }
     

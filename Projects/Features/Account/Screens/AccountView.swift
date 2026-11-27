@@ -16,10 +16,12 @@ public struct AccountView: View {
             CircularButton(image: DesignSystemAsset.google) {
                 send(.didTapSignInWithGoogle)
             }
+            .accessibilityLabel("Sign in with Google")
             
             CircularButton(image: DesignSystemAsset.apple) {
                 send(.didTapSignInWithApple)
             }
+            .accessibilityLabel("Sign in with Apple")
         }
     }
     
@@ -64,8 +66,8 @@ public struct AccountView: View {
                         if store.isSubmitting {
                             ProgressView("Signing in…")
                                 .font(.callout)
-                        } else if store.error != nil {
-                            Text("Sign-in is unavailable. Please try again later.")
+                        } else if let message = store.error?.userMessage {
+                            Text(message)
                                 .font(.callout)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
