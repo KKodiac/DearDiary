@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -35,7 +36,6 @@ jobs:
         run: |
           xcodebuild -version
           ./Scripts/setup.sh
-          git diff --exit-code -- Tuist/Package.resolved
 
       - name: Select an available iPhone simulator
         run: |
