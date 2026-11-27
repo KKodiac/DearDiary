@@ -3,7 +3,7 @@ import SwiftUI
 public struct AccentTextStyle: ViewModifier {
     public func body(content: Content) -> some View {
         content
-            .font(.system(size: 14))
+            .font(.subheadline)
             .foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
     }
 }

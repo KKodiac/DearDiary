@@ -10,14 +10,16 @@ struct RegistrationScreen: View {
         ZStack {
             DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea()
             
-            VStack {
-                Spacer()
-                titleSection
-                registrationForm
-                Spacer()
-                buttonSection
+            ScrollView {
+                VStack {
+                    titleSection
+                    registrationForm
+                    buttonSection
+                }
+                .primaryHorizontalPadding()
+                .padding(.vertical)
             }
-            .primaryHorizontalPadding()
+            .scrollDismissesKeyboard(.interactively)
         }
         .toolbar { toolbarContent }
         .alert($store.scope(state: \.alert, action: \.alert))
@@ -26,6 +28,7 @@ struct RegistrationScreen: View {
     private var titleSection: some View {
         Text("Sign Up")
             .secondaryTextStyle()
+            .accessibilityAddTraits(.isHeader)
             .padding(.bottom, Layout.Padding.titleBottom)
     }
     
@@ -55,8 +58,10 @@ struct RegistrationScreen: View {
                 send(.didTapNavigateToSignIn)
             } label: {
                 Text("Go to Sign In")
-                    .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 14))
+                    .font(.subheadline.bold())
                     .foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .padding(.bottom, Layout.Padding.bottom)
         }
@@ -68,8 +73,12 @@ struct RegistrationScreen: View {
             Button {
                 send(.didTapNavigateToBack)
             } label: {
-                DesignSystemAsset.back.swiftUIImage.foregroundStyle(.black)
+                Image(systemName: "chevron.backward")
+                    .foregroundStyle(.primary)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Back")
         }
     }
     

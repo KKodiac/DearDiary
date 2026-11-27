@@ -13,8 +13,9 @@ public struct PrimarySecureField: View {
     
     public var body: some View {
         VStack(alignment: .leading) {
-            Text(header).accentTextStyle()
+            Text(header).accentTextStyle().accessibilityHidden(true)
             SecureField("", text: $text)
+                .accessibilityLabel(header)
         }
     }
 }

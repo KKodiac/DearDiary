@@ -3,9 +3,7 @@ import SwiftUI
 public struct SecondaryTextStyle: ViewModifier {
     public func body(content: Content) -> some View {
         content
-            .font(
-                DesignSystemFontFamily.Pretendard.semiBold.swiftUIFont(size: 18)
-            )
+            .font(.headline)
     }
 }
 

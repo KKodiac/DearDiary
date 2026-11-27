@@ -1,7 +1,6 @@
 import SwiftUI
 
 public struct Card: View {
-    @Environment(\.colorScheme) private var colorScheme
     let title: String
     let content: String
     let timestamp: Date
@@ -13,30 +12,27 @@ public struct Card: View {
     }
     
     public var body: some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(DesignSystemAsset.ddBackgroundFill.swiftUIColor)
-            .overlay {
-                VStack {
-                    HStack {
-                        Text(title).font(.body).bold()
-                            .foregroundStyle(
-                                colorScheme == .dark ? .white : .black
-                            )
-                        Spacer()
-                        Text(timestamp.formatted(date: .omitted, time: .shortened))
-
-                    }
-                    Text(content)
-                        .multilineTextAlignment(.leading)
-                }
-                .padding(25)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(.primary)
+            Text(timestamp.formatted(date: .omitted, time: .shortened))
                 .font(.caption)
-                .fontWeight(.light)
-                .foregroundStyle(
-                    colorScheme == .dark ? .white : .gray
-                )
-            }
-            .frame(height: 110)
-            .padding([.horizontal, .top])
+                .foregroundStyle(.secondary)
+            Text(content)
+                .font(.body)
+                .foregroundStyle(.primary)
+                .lineLimit(3)
+        }
+        .multilineTextAlignment(.leading)
+        .padding(20)
+        .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+        .background(
+            DesignSystemAsset.ddBackgroundFill.swiftUIColor,
+            in: RoundedRectangle(cornerRadius: 20)
+        )
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .combine)
+        .padding([.horizontal, .top])
     }
 }

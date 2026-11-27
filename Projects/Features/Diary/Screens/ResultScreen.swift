@@ -14,7 +14,9 @@ public struct ResultScreen: View {
             ZStack {
                 if store.entry != nil {
                     mainContent
-                    editButton
+                        .safeAreaInset(edge: .bottom, alignment: .trailing) {
+                            editButton.padding(.vertical, 8)
+                        }
                 } else {
                     ContentUnavailableView(
                         "Diary entry unavailable",
@@ -38,7 +40,7 @@ public struct ResultScreen: View {
             titleText
             contentEditor
             if let error = store.saveError {
-                Text(error).foregroundStyle(.red).font(.callout)
+                Text(error).font(.callout)
             }
         }
     }
@@ -56,37 +58,38 @@ public struct ResultScreen: View {
     
     private var titleText: some View {
         Text(store.title)
-            .font(
-                DesignSystemFontFamily.Pretendard.bold
-                    .swiftUIFont(size: 23)
-            )
+            .font(.title2.bold())
+            .accessibilityAddTraits(.isHeader)
     }
     
+    @ViewBuilder
     private var contentEditor: some View {
-        TextEditor(text: $store.content)
-            .multilineTextAlignment(.leading)
-            .disabled(!store.editable || store.isSaving)
+        if store.editable && !store.isSaving {
+            TextEditor(text: $store.content)
+                .accessibilityLabel("Diary entry")
+        } else {
+            ScrollView {
+                Text(store.content)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
+            }
+        }
     }
     
     // MARK: - Edit Button
     private var editButton: some View {
-        VStack(alignment: .trailing) {
-            Spacer()
-            HStack {
-                Spacer()
-                Button {
-                    store.send(.didTapEditButton)
-                } label: {
-                    Image(systemName: store.editable ? "checkmark" : "pencil")
-                        .bold()
-                        .foregroundColor(.white)
-                        .padding()
-                }
-                .background(DesignSystemAsset.ddAccent.swiftUIColor)
-                .clipShape(Circle())
-            }
+        Button {
+            store.send(.didTapEditButton)
+        } label: {
+            Image(systemName: store.editable ? "checkmark" : "pencil")
+                .bold()
+                .foregroundStyle(.white)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Circle())
         }
-        .padding(.trailing, 10)
+        .accessibilityLabel(store.editable ? "Finish editing" : "Edit entry")
+        .background(DesignSystemAsset.ddAccentFill.swiftUIColor)
+        .clipShape(Circle())
     }
     
     // MARK: - Toolbar Content
@@ -109,9 +112,12 @@ public struct ResultScreen: View {
         Button {
             store.send(.didTapBackButton)
         } label: {
-            DesignSystemAsset.back.swiftUIImage
-                .foregroundStyle(.black)
+            Image(systemName: "chevron.backward")
+                .foregroundStyle(.primary)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel("Back")
     }
     
     private var dateTitle: some View {

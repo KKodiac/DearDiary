@@ -18,6 +18,7 @@ public struct CircularButton: View {
                 .scaledToFit()
                 .padding(12)
                 .frame(width: imageSize.width, height: imageSize.height)
+                .contentShape(Circle())
         }
         .background(.black)
         .clipShape(Circle())

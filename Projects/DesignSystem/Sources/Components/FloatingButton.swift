@@ -15,8 +15,10 @@ public struct FloatingButton: View {
         } label: {
             Image(asset: image)
                 .padding(15)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Circle())
         }
-        .background(DesignSystemAsset.ddAccent.swiftUIColor)
+        .background(DesignSystemAsset.ddAccentFill.swiftUIColor)
         .clipShape(Circle())
     }
 }

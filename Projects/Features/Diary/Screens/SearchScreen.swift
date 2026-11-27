@@ -44,6 +44,7 @@ public struct SearchScreen: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
                         .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .accessibilityLabel("Clear search")
             }
