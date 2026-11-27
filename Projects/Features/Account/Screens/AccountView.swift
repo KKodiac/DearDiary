@@ -55,17 +55,6 @@ public struct AccountView: View {
     }
     
     public var body: some View {
-        Group {
-            if let setup = store.scope(state: \.destination?.setUp, action: \.destination.setUp) {
-                SetupScreen(store: setup)
-                    .navigationBarBackButtonHidden()
-            } else {
-                accountNavigation
-            }
-        }
-    }
-
-    private var accountNavigation: some View {
         NavigationStack {
             ZStack {
                 DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea()
@@ -117,6 +106,15 @@ public struct AccountView: View {
                 )
             ) { store in
                 RegistrationScreen(store: store)
+                    .navigationBarBackButtonHidden()
+            }
+            .fullScreenCover(
+                item: $store.scope(
+                    state: \.destination?.setUp,
+                    action: \.destination.setUp
+                )
+            ) { store in
+                SetupScreen(store: store)
                     .navigationBarBackButtonHidden()
             }
             .onAppear {
