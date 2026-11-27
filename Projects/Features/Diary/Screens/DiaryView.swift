@@ -7,7 +7,7 @@ import SwiftUI
 public struct DiaryView: View {
     @Bindable public var store: StoreOf<Diary>
     @StateObject private var controller = CalendarController()
-    @ScaledMetric(relativeTo: .caption) private var calendarRowHeight = 44.0
+    @ScaledMetric(relativeTo: .caption) private var calendarTextHeight = 16.0
     
     public init(store: StoreOf<Diary>) {
         self.store = store
@@ -152,7 +152,7 @@ public struct DiaryView: View {
             header: { weekHeader($0) },
             component: { dateCell($0) }
         )
-        .frame(height: max(44, calendarRowHeight) * 7)
+        .frame(height: max(44, calendarTextHeight + 8) * 7)
         .padding(.horizontal, 4)
     }
     
@@ -177,6 +177,8 @@ public struct DiaryView: View {
             Text("\(date.day)")
                 .font(.caption)
                 .fontWeight(isSelected ? .bold : .regular)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
                 .padding(4)
                 .background {
                     if isSelected {
