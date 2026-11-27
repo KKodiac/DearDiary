@@ -117,7 +117,7 @@ The V2 persistence schema adds an optional account owner identifier to diary ent
 
 ## Automated checks
 
-`.github/workflows/ios.yml` runs on pull requests, pushes to `main`, and manual dispatch. It uses the macOS 26 GitHub runner’s supported default Xcode (currently 26.6), installs the Tuist version pinned in `.mise.toml`, and runs `Scripts/setup.sh` with the safe placeholder configuration. It also checks that dependency installation leaves the reviewed lockfile unchanged.
+`.github/workflows/ios.yml` runs on pull requests targeting `main`, pushes to `main`, and manual dispatch. It uses the macOS 26 GitHub runner’s supported default Xcode (currently 26.6), installs the Tuist version pinned in `.mise.toml`, and runs `Scripts/setup.sh` with the safe placeholder configuration. SwiftPM may normalize conditional transitive pins differently across Xcode toolchains, so CI validates the resolved workspace by building and running tests instead of requiring a byte-for-byte lockfile diff.
 
 The job builds `DearDiary`, runs `DiaryTest` and `DearDiaryTests`, and runs the Account reducer suites through `AccountTest/AccountTests` and `AccountTest/SetupTests`. It selects an available iPhone simulator running iOS 18 or later that matches the active Xcode SDK. Test result bundles are uploaded for seven days, including when tests fail. The workflow contains no service credentials and does not exercise live authentication or on-device model generation.
 
