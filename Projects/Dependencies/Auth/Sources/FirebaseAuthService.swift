@@ -1,5 +1,6 @@
 import FirebaseAuth
-import ExternalDependencies
+import Dependencies
+import FirebaseCore
 
 extension FirebaseAuthService: FirebaseAuthServiceInterface {
     // Firebase's default-app lookup logs an error before configuration. Keep the

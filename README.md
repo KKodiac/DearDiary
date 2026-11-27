@@ -1,10 +1,10 @@
 # Dear Diary
 
-An iOS diary companion built with SwiftUI, The Composable Architecture (TCA), and SwiftData. This is a learning project under active development; several diary and assistant flows are incomplete.
+An iOS diary companion built with SwiftUI, The Composable Architecture (TCA), SwiftData, and Apple's on-device Foundation Models framework. This is a learning project under active development.
 
 ## Requirements
 
-- macOS with Xcode 16.3 or later (Swift 6.1 toolchain or later) and command-line tools selected with `xcode-select`
+- macOS with Xcode 26 or later (Swift 6.1 toolchain or later) and command-line tools selected with `xcode-select`
 - iOS 18 or later
 - [mise](https://mise.jdx.dev) and network access to resolve Swift packages
 - Tuist 4.218.5, pinned in `.mise.toml`
@@ -27,7 +27,9 @@ Tuist/Plugins/DependencyPlugin/ProjectDescriptionHelpers/Project+Secrets.swift
 
 For Firebase/Google authentication, copy the corresponding Firebase iOS application's `API_KEY`, `GOOGLE_APP_ID`, `GCM_SENDER_ID`, `PROJECT_ID`, `BUNDLE_ID`, and `CLIENT_ID` values into the dictionary. Set the Google URL scheme to the Firebase configuration's `REVERSED_CLIENT_ID`. Ensure the Firebase app registration matches the bundle identifier of the app you run. Apple sign-in additionally requires your development team, entitlement, and Apple/Firebase provider configuration.
 
-The current assistant implementation reads `OpenAIToken` and `AssistantID` from the app's generated Info.plist. These development values are embedded in built apps; do not distribute a build containing a private API token. Moving credential-bearing requests behind an authenticated backend remains follow-up work. No real credentials are included in the template.
+Diary conversations and composition use Apple's Foundation Models framework on device. The app still installs on iOS 18, while AI features require iOS 26 or later, an eligible device, and Apple Intelligence enabled and ready. The app checks model availability and shows an explanation when it cannot run. No hosted model credentials are needed.
+
+Conversation text is sent to the on-device model and is not uploaded to an AI provider. Diary entries and conversation records are stored in the local SwiftData store; this app has no remote diary-content service. Firebase and Google values in the local app configuration identify the app and Firebase project and are included in the built app. Restrict the Firebase API key to the app’s bundle identifier and required APIs. Never put service-account keys or other server credentials in `Info.plist`.
 
 After changing local configuration or manifests, regenerate:
 
@@ -83,12 +85,8 @@ Projects/
 ├── Features/
 │   ├── Account/           Authentication, registration, and setup
 │   └── Diary/             Diary, conversation, search, detail, and settings
-├── Dependencies/
-│   ├── Auth/              Authentication clients and services
-│   ├── Assistant/         Assistant API client, routers, and DTOs
-│   └── Persistence/       SwiftData schemas, migrations, and repositories
+├── Dependencies/          Separate Auth, Assistant, and Persistence targets
 ├── DesignSystem/          Shared SwiftUI components, styles, fonts, and assets
-├── ExternalDependencies/  Third-party exports and adapters
 └── Utility/               Shared helpers
 Tuist/                     Packages, configuration, and manifest plugin
 Configuration/             Safe local-configuration template
@@ -97,9 +95,9 @@ Tuist.swift                Tuist configuration and plugin registration
 Workspace.swift            Workspace definition
 ```
 
-`App` composes `Features` (Account and Diary). Feature targets depend on `DesignSystem`, `InternalDependencies`, `ExternalDependencies`, and `Utility`. `InternalDependencies` gathers Auth, Assistant, and Persistence. Each feature has reducer implementations in `Features/`, SwiftUI views in `Screens/` (destination views use `Screen`; feature root containers use `View`), domain values in `ValueObjects/`, an example app, and tests. Service folders distinguish their interfaces from live implementations.
+`App` composes `Features` (Account and Diary). Account and Diary declare direct dependencies on the service targets and third-party products they import. `Dependencies` is a Tuist project that groups the separate Auth, Assistant, and Persistence modules; it has no umbrella target or re-export module. Public clients such as `AuthClient`, `SessionClient`, `AssistantClient`, and `EntryStoreClient` define the interfaces consumed by features. Each feature has reducer implementations in `Features/`, SwiftUI views in `Screens/` (destination views use `Screen`; feature root containers use `View`), domain values in `ValueObjects/`, an example app, and tests.
 
-All app and internal module targets use iOS 18 and Swift 5 language mode for Debug and Release. This language mode does not lower the compiler requirement: TCA 1.26.2 includes a Swift 6.1 package manifest (and a newer primary manifest), so package resolution requires Swift 6.1 or later. Strict Swift 6 migration remains separate work. External packages are pinned in `Tuist/Package.swift`: TCA, SnapshotTesting, Moya, SwiftUICalendar, Firebase, and Google Sign-In. Moya is still used by the assistant networking layer.
+All app and internal module targets use iOS 18 and Swift 5 language mode for Debug and Release. This language mode does not lower the compiler requirement: TCA 1.26.2 includes a Swift 6.1 package manifest (and a newer primary manifest), so package resolution requires Swift 6.1 or later. Strict Swift 6 migration remains separate work. External packages are pinned in `Tuist/Package.swift`: TCA, SnapshotTesting, SwiftUICalendar, Firebase, and Google Sign-In.
 
 ## Dependency usage
 
@@ -107,12 +105,11 @@ All app and internal module targets use iOS 18 and Swift 5 language mode for Deb
 | --- | --- |
 | TCA | App/feature reducers, dependency clients, and reducer tests |
 | SnapshotTesting | Account UI snapshot tests |
-| Moya | Assistant API routers and providers |
 | SwiftUICalendar | Diary calendar and selected-date values |
 | Firebase | Authentication and core app configuration |
 | GoogleSignIn | Google authentication via `GIDSignIn` |
 
-The app uses custom Google sign-in controls; the unused `GoogleSignInSwift` product and imports were removed. All six direct packages remain necessary. `ExternalDependencies` reexports shared third-party modules for existing consumers; narrowing these exports requires coordinated explicit imports and target dependency changes.
+The app uses custom Google sign-in controls; the unused `GoogleSignInSwift` product and imports were removed. The previous hosted assistant networking layer was replaced by Foundation Models. Third-party modules are linked directly by the targets that use them.
 
 ## Existing diary data
 
@@ -122,6 +119,6 @@ The V2 persistence schema adds an optional account owner identifier to diary ent
 
 `.github/workflows/ios.yml` runs on pull requests, pushes to `main`, and manual dispatch. It uses the macOS 26 GitHub runner’s supported default Xcode (currently 26.6), installs the Tuist version pinned in `.mise.toml`, and runs `Scripts/setup.sh` with the safe placeholder configuration. It also checks that dependency installation leaves the reviewed lockfile unchanged.
 
-The job builds `DearDiary`, runs `DiaryTest` and `DearDiaryTests`, and runs the Account reducer suites through `AccountTest/AccountTests` and `AccountTest/SetupTests`. It selects an available iPhone simulator running iOS 18 or later that matches the active Xcode SDK. Test result bundles are uploaded for seven days, including when tests fail. The workflow contains no service credentials and does not exercise live authentication or assistant requests.
+The job builds `DearDiary`, runs `DiaryTest` and `DearDiaryTests`, and runs the Account reducer suites through `AccountTest/AccountTests` and `AccountTest/SetupTests`. It selects an available iPhone simulator running iOS 18 or later that matches the active Xcode SDK. Test result bundles are uploaded for seven days, including when tests fail. The workflow contains no service credentials and does not exercise live authentication or on-device model generation.
 
 Existing Account snapshot suites are excluded from CI because their baselines depend on device and OS settings. Refreshing and validating those baselines remains open. Workflow syntax and simulator selection are checked locally; the hosted workflow still needs its first run after publishing these changes.

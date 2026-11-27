@@ -9,6 +9,18 @@ public struct ChatScreen: View {
     
     public var body: some View {
         VStack {
+            if let error = store.errorMessage, !store.composing {
+                HStack {
+                    Text(error).font(.footnote).foregroundStyle(.red)
+                    Button("Retry") { store.send(.didTapRetry) }
+                        .disabled(store.isWorking || store.failedMessage == nil)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.vertical, 6)
+            }
+            if store.isWorking && !store.composing {
+                ProgressView("Waiting for your diary…").font(.footnote)
+            }
             chatHistory
             chatInput
         }
@@ -42,7 +54,17 @@ public struct ChatScreen: View {
             isPresented: $store.composing,
             onDismiss: { store.send(.didReceiveCancelled) }
         ) {
-            // Sheet content
+            VStack(spacing: 16) {
+                if store.isWorking {
+                    ProgressView("Writing your diary…")
+                } else if let error = store.errorMessage {
+                    Text(error).multilineTextAlignment(.center)
+                    Button("Retry") { store.send(.didTapRetry) }
+                    Button("Cancel", role: .cancel) { store.send(.didReceiveCancelled) }
+                }
+            }
+            .padding(32)
+            .presentationDetents([.medium])
         }
     }
     
@@ -58,6 +80,7 @@ public struct ChatScreen: View {
             ChatTextFieldStyle(colorScheme: colorScheme)
         )
         .onSubmit { store.send(.didTapSendButton) }
+        .disabled(store.isWorking)
     }
     
     private var sendButton: some View {
@@ -77,6 +100,7 @@ public struct ChatScreen: View {
                         )
                 }
         }
+        .disabled(store.isWorking || store.dialogue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
     
     // MARK: - Chat Bubble

@@ -1,6 +1,6 @@
 import ComposableArchitecture
 import Foundation
-import ExternalDependencies
+import ComposableArchitecture
 
 @Reducer
 public struct Setup: Sendable {

@@ -1,5 +1,5 @@
-import ExternalDependencies
-import InternalDependencies
+import ComposableArchitecture
+import Auth
 import Foundation
 import OSLog
 
@@ -63,7 +63,7 @@ extension SignUp {
             await state.$isInitialUser.withLock { $0 = isNewUser }
             if isNewUser { await send(.delegate(.navigateToSetup)) }
         } catch: { error, send in
-            logger.error("Error: \(error)")
+            logger.error("Email registration failed.")
             await send(.delegate(.didThrowError(FeatureError(error: error))))
         }
     }

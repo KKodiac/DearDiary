@@ -1,5 +1,5 @@
-import ExternalDependencies
-import InternalDependencies
+import ComposableArchitecture
+import Auth
 import Foundation
 import OSLog
 
@@ -57,7 +57,7 @@ extension SignIn {
                 await send(.delegate(.navigateToDiary))
             }
         } catch: { error, send in
-            logger.error("Error: \(error)")
+            logger.error("Apple sign-in failed.")
             await send(.delegate(.didThrowError(FeatureError(error: error))))
         }
     }
@@ -78,7 +78,7 @@ extension SignIn {
                 await send(.delegate(.navigateToDiary))
             }
         } catch: { error, send in
-            logger.error("Error: \(error)")
+            logger.error("Google sign-in failed.")
             await send(.delegate(.didThrowError(FeatureError(error: error))))
         }
     }
@@ -102,7 +102,7 @@ extension SignIn {
                 await send(.delegate(.navigateToDiary))
             }
         } catch: { error, send in
-            logger.error("Error: \(error)")
+            logger.error("Email sign-in failed.")
             await send(.delegate(.didThrowError(FeatureError(error: error))))
         }
     }

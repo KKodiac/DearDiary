@@ -1,6 +1,6 @@
 import AuthenticationServices
-import ExternalDependencies
-import InternalDependencies
+import ComposableArchitecture
+import Auth
 import SwiftUI
 
 import OSLog

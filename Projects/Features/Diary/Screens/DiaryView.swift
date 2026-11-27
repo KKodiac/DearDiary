@@ -40,11 +40,34 @@ public struct DiaryView: View {
         GeometryReader { proxy in
             VStack(spacing: 20) {
                 headerView
+                if let error = store.sessionError {
+                    sessionErrorBanner(error)
+                }
                 calendarView
                 listView
             }
         }
         .ignoresSafeArea(.all, edges: .bottom)
+    }
+
+    private func sessionErrorBanner(_ message: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(message)
+                .font(.callout)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Button {
+                send(.dismissSessionError)
+            } label: {
+                Image(systemName: "xmark")
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .accessibilityLabel("Dismiss sign-out error")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .foregroundStyle(.red)
+        .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+        .padding(.horizontal)
     }
     
     // MARK: - Header

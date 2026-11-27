@@ -1,5 +1,5 @@
 import AuthenticationServices
-import ExternalDependencies
+import ComposableArchitecture
 import Auth
 import Foundation
 import SwiftUI

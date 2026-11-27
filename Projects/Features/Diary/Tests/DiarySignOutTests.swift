@@ -51,7 +51,10 @@ struct DiarySignOutTests {
         await store.send(.destination(.presented(.setting(.delegate(.signOutRequested))))) {
             $0.isSigningOut = true
         }
-        await store.receive(.internal(.didFailSignOut)) { $0.isSigningOut = false }
+        await store.receive(.internal(.didFailSignOut)) {
+            $0.isSigningOut = false
+            $0.sessionError = "You couldn’t be signed out. Open Settings to try again."
+        }
         await store.receive(.destination(.presented(.setting(.signOutFailed)))) {
             guard case var .setting(settings) = $0.destination else { return }
             settings.isSigningOut = false
@@ -60,5 +63,27 @@ struct DiarySignOutTests {
         }
         #expect(store.state.uid == "alice")
         #expect(store.state.diaryName == "My diary")
+    }
+
+    @Test
+    func signOutErrorSurvivesSuccessfulDiaryReload() async {
+        var state = Diary.State()
+        state.$uid = Shared(value: "alice")
+        let store = TestStore(initialState: state) { Diary() } withDependencies: {
+            $0.entryStore.load = { _, _, _ in [] }
+        }
+
+        await store.send(.internal(.didFailSignOut)) {
+            $0.sessionError = "You couldn’t be signed out. Open Settings to try again."
+        }
+        await store.send(.view(.didTapRetry)) {
+            $0.isLoading = true
+            $0.loadGeneration = 1
+        }
+        await store.receive(.internal(.didLoadEntries(generation: 1, entries: []))) {
+            $0.isLoading = false
+            $0.hasLoaded = true
+        }
+        #expect(store.state.sessionError == "You couldn’t be signed out. Open Settings to try again.")
     }
 }

@@ -17,14 +17,11 @@ let project = Project(
                     target: "DesignSystem",
                     path: .relativeToRoot("Projects/DesignSystem")
                 ),
-                .project(
-                    target: "InternalDependencies",
-                    path: .relativeToRoot("Projects/Dependencies")
-                ),
-                .project(
-                    target: "ExternalDependencies",
-                    path: .relativeToRoot("Projects/ExternalDependencies")
-                ),
+                .project(target: "Auth", path: .relativeToRoot("Projects/Dependencies")),
+                .project(target: "Assistant", path: .relativeToRoot("Projects/Dependencies")),
+                .project(target: "Persistence", path: .relativeToRoot("Projects/Dependencies")),
+                .external(name: "ComposableArchitecture"),
+                .external(name: "SwiftUICalendar"),
                 .project(
                     target: "Utility",
                     path: .relativeToRoot("Projects/Utility")
@@ -42,6 +39,12 @@ let project = Project(
             sources: [.glob(.relativeToCurrentFile("Tests/**"))],
             dependencies: [
                 .target(name: "DiaryExample"),
+                .target(name: "Diary"),
+                .project(target: "Auth", path: .relativeToRoot("Projects/Dependencies")),
+                .project(target: "Assistant", path: .relativeToRoot("Projects/Dependencies")),
+                .project(target: "Persistence", path: .relativeToRoot("Projects/Dependencies")),
+                .external(name: "ComposableArchitecture"),
+                .external(name: "SwiftUICalendar"),
                 .external(name: "SnapshotTesting")
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
@@ -55,7 +58,8 @@ let project = Project(
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: [.glob(.relativeToCurrentFile("Example/*"))],
             dependencies: [
-                .target(name: "Diary")
+                .target(name: "Diary"),
+                .external(name: "ComposableArchitecture")
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),

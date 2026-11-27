@@ -40,9 +40,6 @@ public struct MemoirScreen: View {
             navigationHeader
         }
         
-        ToolbarItem(placement: .topBarTrailing) {
-            settingsButton
-        }
     }
     
     // MARK: - Header Section
@@ -213,12 +210,4 @@ public struct MemoirScreen: View {
         }
     }
     
-    private var settingsButton: some View {
-        Button {
-            // Settings action
-        } label: {
-            Image(systemName: "gearshape.fill")
-                .tint(DesignSystemAsset.ddPrimary.swiftUIColor)
-        }
-    }
 }

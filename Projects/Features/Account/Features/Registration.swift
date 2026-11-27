@@ -1,5 +1,5 @@
 import ComposableArchitecture
-import ExternalDependencies
+import Auth
 import Foundation
 import OSLog
 

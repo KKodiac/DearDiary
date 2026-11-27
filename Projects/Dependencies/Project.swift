@@ -2,36 +2,20 @@
 import DependencyPlugin
 
 let project = Project(
-    name: "InternalDependencies",
+    name: "CoreDependencies",
     targets: [
-        .target(
-            name: "InternalDependencies",
-            destinations: Project.Environment.destinations,
-            product: .staticLibrary,
-            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).InternalDependencies",
-            deploymentTargets: Project.Environment.deploymentTarget,
-            infoPlist: .default,
-            sources: ["Sources/*"],
-            dependencies: [
-                .target(name: "Auth", condition: .when(.all)),
-                .target(name: "Assistant", condition: .when(.all)),
-                .target(name: "Persistence", condition: .when(.all))
-            ],
-            settings: .settings(configurations: [.defaultDebug, .defaultRelease])
-        ),
         .target(
             name: "Auth",
             destinations: Project.Environment.destinations,
             product: .staticLibrary,
-            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).InternalDependencies.Auth",
+            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).CoreDependencies.Auth",
             deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .default,
             sources: ["Auth/**"],
             dependencies: [
-                .project(
-                    target: "ExternalDependencies",
-                    path: .relativeToRoot("Projects/ExternalDependencies")
-                ),
+                .external(name: "Dependencies"),
+                .external(name: "FirebaseAuth"),
+                .external(name: "GoogleSignIn"),
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),
@@ -39,15 +23,12 @@ let project = Project(
             name: "Assistant",
             destinations: Project.Environment.destinations,
             product: .staticLibrary,
-            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).InternalDependencies.Assistant",
+            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).CoreDependencies.Assistant",
             deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .default,
             sources: ["Assistant/**"],
             dependencies: [
-                .project(
-                    target: "ExternalDependencies",
-                    path: .relativeToRoot("Projects/ExternalDependencies")
-                ),
+                .external(name: "Dependencies"),
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),
@@ -55,15 +36,13 @@ let project = Project(
             name: "Persistence",
             destinations: Project.Environment.destinations,
             product: .staticLibrary,
-            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).InternalDependencies.Persistence",
+            bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).CoreDependencies.Persistence",
             deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: ["Persistence/**"],
             dependencies: [
-                .project(
-                    target: "ExternalDependencies",
-                    path: .relativeToRoot("Projects/ExternalDependencies")
-                ),
+                .external(name: "ComposableArchitecture"),
+                .external(name: "Dependencies"),
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         )

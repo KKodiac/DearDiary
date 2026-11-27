@@ -15,14 +15,6 @@ import SwiftUI
 
 final class AccountSnapshot: XCTestCase {
     
-    override func setUpWithError() throws {
-        // isRecording = true
-    }
-    
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-    
     func testAccountSnapshot() throws {
         let view = AccountView(
             store: StoreOf<Account>(

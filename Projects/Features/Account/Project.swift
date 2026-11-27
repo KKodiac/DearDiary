@@ -17,14 +17,9 @@ let project = Project(
                     target: "DesignSystem",
                     path: .relativeToRoot("Projects/DesignSystem")
                 ),
-                .project(
-                    target: "InternalDependencies",
-                    path: .relativeToRoot("Projects/Dependencies")
-                ),
-                .project(
-                    target: "ExternalDependencies",
-                    path: .relativeToRoot("Projects/ExternalDependencies")
-                ),
+                .project(target: "Auth", path: .relativeToRoot("Projects/Dependencies")),
+                .external(name: "ComposableArchitecture"),
+                .external(name: "GoogleSignIn"),
                 .project(
                     target: "Utility",
                     path: .relativeToRoot("Projects/Utility")
@@ -42,6 +37,7 @@ let project = Project(
             sources: [.glob(.relativeToCurrentFile("Tests/**"))],
             dependencies: [
                 .target(name: "AccountExample"),
+                .external(name: "ComposableArchitecture"),
                 .external(name: "SnapshotTesting")
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
@@ -55,7 +51,8 @@ let project = Project(
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: [.glob(.relativeToCurrentFile("Example/*"))],
             dependencies: [
-                .target(name: "Account")
+                .target(name: "Account"),
+                .external(name: "ComposableArchitecture")
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),

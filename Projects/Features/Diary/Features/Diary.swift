@@ -2,7 +2,6 @@ import ComposableArchitecture
 @preconcurrency import SwiftUICalendar
 import Foundation
 import SwiftData
-import ExternalDependencies
 import Persistence
 import Auth
 
@@ -21,6 +20,7 @@ public struct Diary {
         var isLoading = false
         var hasLoaded = false
         var loadError: String?
+        var sessionError: String?
         var loadGeneration = 0
 
         
@@ -52,6 +52,7 @@ public struct Diary {
         public enum ViewActions: BindableAction, Sendable, Equatable {
             case didAppear
             case didTapRetry
+            case dismissSessionError
             case didTapSearch
             
             case didTapEntryCard(Entry)
@@ -93,6 +94,9 @@ public struct Diary {
             switch action {
             case .view(.didAppear), .view(.didTapRetry):
                 return loadEntries(state: &state)
+            case .view(.dismissSessionError):
+                state.sessionError = nil
+                return .none
             case let .view(.didTapCalendarDate(date)):
                 state.focusDate = date
                 return loadEntries(state: &state)
@@ -126,6 +130,7 @@ public struct Diary {
             case .destination(.presented(.setting(.delegate(.signOutRequested)))):
                 guard !state.isSigningOut else { return .none }
                 state.isSigningOut = true
+                state.sessionError = nil
                 return .run { send in
                     do {
                         try await session.signOut()
@@ -139,14 +144,15 @@ public struct Diary {
                 state.$uid.withLock { $0 = "" }
                 state.$diaryName.withLock { $0 = "" }
                 state.focusedEntries = []
+                state.sessionError = nil
                 state.loadGeneration += 1
                 return .merge(.cancel(id: CancelID.load), .send(.delegate(.signedOut)))
             case .internal(.didFailSignOut):
                 state.isSigningOut = false
+                state.sessionError = "You couldn’t be signed out. Open Settings to try again."
                 if case .setting = state.destination {
                     return .send(.destination(.presented(.setting(.signOutFailed))))
                 }
-                state.loadError = "You couldn’t be signed out. Open Settings to try again."
                 return .none
             case .destination(.presented(.memoir(.destination(.presented(.result(.didSaveEntry)))))):
                 return loadEntries(state: &state)
