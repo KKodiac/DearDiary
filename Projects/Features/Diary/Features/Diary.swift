@@ -156,7 +156,8 @@ public struct Diary {
                     return .send(.destination(.presented(.setting(.signOutFailed))))
                 }
                 return .none
-            case .destination(.presented(.memoir(.destination(.presented(.result(.didSaveEntry)))))):
+            case .destination(.presented(.setting(.legacyRecovery(.presented(.entriesChanged))))),
+                 .destination(.presented(.memoir(.destination(.presented(.result(.didSaveEntry)))))):
                 return loadEntries(state: &state)
             default:
                 return .none

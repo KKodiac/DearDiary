@@ -36,6 +36,8 @@ public enum EntryStorageError: Error, Equatable, Sendable {
 }
 
 public protocol EntryRepository: Sendable {
+    func legacyEntries() async throws -> [StoredEntry]
+    func recoverLegacyEntry(id: UUID, ownerID: String) async throws
     func entries(from start: Date, until end: Date, ownerID: String) async throws -> [StoredEntry]
     func save(_ entry: StoredEntry, ownerID: String) async throws
     func search(query: String, ownerID: String) async throws -> [StoredEntry]
