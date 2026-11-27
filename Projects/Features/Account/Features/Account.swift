@@ -8,6 +8,7 @@ import SwiftUI
 public struct Account {
     @ObservableState
     public struct State: Sendable, Equatable {
+        var isSubmitting = false
         var signIn: SignIn.State
         
         @Presents var destination: Destination.State?
@@ -99,20 +100,28 @@ public struct Account {
                     return .none
                     
                 case .didTapSignInWithGoogle:
+                    guard !state.isSubmitting else { return .none }
+                    state.isSubmitting = true
+                    state.error = nil
                     return SignIn()
                         .signInWithGoogle(state: &state.signIn)
                         .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithApple:
+                    guard !state.isSubmitting else { return .none }
+                    state.isSubmitting = true
+                    state.error = nil
                     return SignIn()
                         .signInWithApple(state: &state.signIn)
                         .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithEmail:
+                    guard !state.isSubmitting else { return .none }
                     state.destination = .authentication(Authentication.State(clientUID: state.$clientUID))
                     return .none
                     
                 case .didTapSignUpWithEmail:
+                    guard !state.isSubmitting else { return .none }
                     state.destination = .registration(Registration.State())
                     return .none
                     
@@ -124,13 +133,16 @@ public struct Account {
             NestedAction(\.internal) { state, action in
                 switch action {
                 case .signIn(.delegate(.navigateToSetup)):
+                    state.isSubmitting = false
                     state.destination = .setUp(Setup.State())
                     return .none
                     
                 case .signIn(.delegate(.navigateToDiary)):
+                    state.isSubmitting = false
                     return .send(.delegate(.navigateToDiary))
                     
                 case .signIn(.delegate(.didThrowError(let error))):
+                    state.isSubmitting = false
                     state.error = FeatureError(error: error)
                     return .none
                     

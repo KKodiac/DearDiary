@@ -8,6 +8,7 @@ public struct DiaryView: View {
     @Bindable public var store: StoreOf<Diary>
     @StateObject private var controller = CalendarController()
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.locale) private var locale
     
     public init(store: StoreOf<Diary>) {
         self.store = store
@@ -37,17 +38,14 @@ public struct DiaryView: View {
     
     // MARK: - Main Content
     private var mainContent: some View {
-        GeometryReader { proxy in
-            VStack(spacing: 20) {
-                headerView
-                if let error = store.sessionError {
-                    sessionErrorBanner(error)
-                }
-                calendarView
-                listView
+        VStack(spacing: 12) {
+            headerView
+            if let error = store.sessionError {
+                sessionErrorBanner(error)
             }
+            calendarView
+            listView
         }
-        .ignoresSafeArea(.all, edges: .bottom)
     }
 
     private func sessionErrorBanner(_ message: String) -> some View {
@@ -84,7 +82,8 @@ public struct DiaryView: View {
             .accessibilityLabel("Search diary")
             settingsButton
         }
-        .padding(20)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 8)
         .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
         .navigationDestination(
             item: $store.scope(
@@ -128,29 +127,41 @@ public struct DiaryView: View {
         } label: {
             (direction == .previous ? DesignSystemAsset.arrowleft : DesignSystemAsset.arrowright)
                 .swiftUIImage
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
-        .padding(25)
+        .accessibilityLabel(direction == .previous ? Text("Previous month") : Text("Next month"))
+        .padding(12)
     }
     
     private var monthYearLabel: some View {
-        Text("\(String(controller.yearMonth.year)).\(controller.yearMonth.month)")
-            .font(.system(size: 20))
-            .bold()
-            .padding(.vertical)
+        let month = controller.yearMonth
+        let firstDay = YearMonthDay(year: month.year, month: month.month, day: 1)
+        return Group {
+            if let date = firstDay.date {
+                Text(date, format: .dateTime.month(.wide).year())
+            }
+        }
+        .font(.title3.bold())
+        .accessibilityAddTraits(.isHeader)
+        .padding(.vertical)
     }
     
+
     private var calendarGrid: some View {
         CalendarView(
             controller,
             header: { weekHeader($0) },
             component: { dateCell($0) }
         )
-        .padding([.horizontal, .bottom], 30)
+        .padding(.horizontal, 20)
     }
     
     private func weekHeader(_ week: Week) -> some View {
         GeometryReader { proxy in
-            Text("\(week.shortString.first?.uppercased() ?? "")")
+            Text(week.shortString(locale: locale))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
                 .font(.subheadline)
                 .bold()
                 .frame(width: proxy.size.width,
@@ -162,24 +173,29 @@ public struct DiaryView: View {
     @ViewBuilder
     private func dateCell(_ date: YearMonthDay) -> some View {
         GeometryReader { proxy in
-            Text("\(date.day)")
-                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
-                .font(.caption)
-                .fontWeight(store.focusDate == date ? .bold : .light)
-                .background(
-                    DesignSystemAsset.ddAccent.swiftUIColor
-                        .clipShape(Circle())
-                        .opacity(store.focusDate == date ? 1 : 0)
-                )
-                .foregroundStyle(
-                    store.focusDate == date 
-                    ? Color.white 
-                    : colorScheme == .dark ? .primary : Color.black
-                )
-                .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
-                .onTapGesture {
-                    send(.didTapCalendarDate(date))
-                }
+            Button {
+                send(.didTapCalendarDate(date))
+            } label: {
+                Text("\(date.day)")
+                    .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
+                    .font(.caption)
+                    .fontWeight(store.focusDate == date ? .bold : .light)
+                    .background(
+                        DesignSystemAsset.ddAccent.swiftUIColor
+                            .clipShape(Circle())
+                            .opacity(store.focusDate == date ? 1 : 0)
+                    )
+                    .foregroundStyle(
+                        store.focusDate == date
+                        ? Color.white
+                        : colorScheme == .dark ? .primary : Color.black
+                    )
+                    .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(date.date.map { Text($0, format: .dateTime.weekday(.wide).day().month(.wide).year()) } ?? Text("\(date.day)"))
+            .accessibilityAddTraits(store.focusDate == date ? .isSelected : [])
         }
     }
     
@@ -188,6 +204,7 @@ public struct DiaryView: View {
         VStack {
             dateHeader
             entriesList
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .padding(.top)
         .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
@@ -204,20 +221,21 @@ public struct DiaryView: View {
     }
     
     private var dateHeader: some View {
-        Divider()
-            .overlay {
-                HStack {
-                    Text("\(store.focusDate.date?.formatted(date: .abbreviated, time: .omitted) ?? "")")
-                        .foregroundStyle(Color.gray)
-                        .padding(.trailing)
-                        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
-                    Spacer()
-                }
+        HStack(spacing: 12) {
+            if let date = store.focusDate.date {
+                Text(date.formatted(date: .abbreviated, time: .omitted))
+                    .font(.headline)
+                    .foregroundStyle(.secondary)
+                    .accessibilityAddTraits(.isHeader)
             }
-            .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
-            .padding()
+            Rectangle()
+                .fill(.quaternary)
+                .frame(height: 1)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
     }
-    
+
     @ViewBuilder
     private var entriesList: some View {
         if store.isLoading {
@@ -237,11 +255,12 @@ public struct DiaryView: View {
             )
         } else {
             ScrollView {
-                LazyVStack {
+                LazyVStack(spacing: 12) {
                     ForEach(store.focusedEntries, id: \.self) { entry in
                         entryCard(for: entry)
                     }
                 }
+                .padding(.bottom, 76)
             }
         }
     }
@@ -252,7 +271,7 @@ public struct DiaryView: View {
         } label: {
             Card(title: entry.title, content: entry.content, timestamp: entry.createdAt)
         }
-        .tint(.black)
+        .buttonStyle(.plain)
     }
     
     // MARK: - Supporting Views
@@ -264,6 +283,7 @@ public struct DiaryView: View {
                 FloatingButton(image: DesignSystemAsset.imoji) {
                     send(.didTapMemoirButton)
                 }
+                .accessibilityLabel("Open diary conversation")
             }
         }
         .padding()

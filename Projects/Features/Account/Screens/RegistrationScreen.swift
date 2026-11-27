@@ -6,18 +6,28 @@ import SwiftUI
 struct RegistrationScreen: View {
     @Bindable public var store: StoreOf<Registration>
     
+    @FocusState private var focusedField: Field?
+
+    private enum Field: Hashable {
+        case name, email, password, confirmPassword
+    }
+
     public var body: some View {
         ZStack {
             DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea()
             
-            VStack {
-                Spacer()
-                titleSection
-                registrationForm
-                Spacer()
-                buttonSection
+            ScrollView {
+                VStack(spacing: 24) {
+                    titleSection
+                    registrationForm
+                    buttonSection
+                }
+                .frame(maxWidth: 440)
+                .frame(maxWidth: .infinity)
+                .primaryHorizontalPadding()
+                .padding(.vertical, 24)
             }
-            .primaryHorizontalPadding()
+            .scrollDismissesKeyboard(.interactively)
         }
         .toolbar { toolbarContent }
         .alert($store.scope(state: \.alert, action: \.alert))
@@ -25,57 +35,83 @@ struct RegistrationScreen: View {
     
     private var titleSection: some View {
         Text("Sign Up")
-            .secondaryTextStyle()
-            .padding(.bottom, Layout.Padding.titleBottom)
+            .font(.largeTitle.bold())
     }
     
     private var registrationForm: some View {
-        VStack(spacing: Layout.Spacing.form) {
-            PrimaryTextField("Your Name", text: $store.name)
+        VStack(spacing: 12) {
+            TextField("Your Name", text: $store.name)
                 .textContentType(.name)
-            PrimaryTextField("Your Email", text: $store.email)
+                .focused($focusedField, equals: .name)
+                .textInputAutocapitalization(.words)
+                .submitLabel(.next)
+                .onSubmit { focusedField = .email }
+            TextField("Your Email", text: $store.email)
                 .textContentType(.emailAddress)
-            PrimarySecureField("Password", text: $store.password)
+                .focused($focusedField, equals: .email)
+                .keyboardType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.next)
+                .onSubmit { focusedField = .password }
+            SecureField("Password", text: $store.password)
                 .textContentType(.newPassword)
-            PrimarySecureField("Confirm Password", text: $store.confirmPassword)
+                .focused($focusedField, equals: .password)
+                .submitLabel(.next)
+                .onSubmit { focusedField = .confirmPassword }
+            SecureField("Confirm Password", text: $store.confirmPassword)
                 .textContentType(.newPassword)
+                .focused($focusedField, equals: .confirmPassword)
+                .submitLabel(.done)
+                .onSubmit { submit() }
         }
-        .textFieldStyle(SecondaryTextFieldStyle())
-        .textInputAutocapitalization(.never)
+        .textFieldStyle(PrimaryTextFieldStyle())
+        .disabled(store.isSubmitting)
     }
     
     private var buttonSection: some View {
-        VStack {
+        VStack(spacing: 16) {
             PrimaryButton(label: "Sign Up") {
-                send(.didTapSignUpWithEmail)
+                submit()
             }
-            .padding(.vertical, Layout.Spacing.medium)
-            
+            .disabled(store.isSubmitting)
+            .overlay(alignment: .trailing) {
+                if store.isSubmitting {
+                    ProgressView()
+                        .tint(.white)
+                        .padding(.trailing, 16)
+                        .accessibilityLabel("Creating your account…")
+                }
+            }
+
             Button {
                 send(.didTapNavigateToSignIn)
             } label: {
                 Text("Go to Sign In")
-                    .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 14))
+                    .font(.subheadline.weight(.semibold))
+                    .frame(minHeight: 44)
                     .foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
             }
-            .padding(.bottom, Layout.Padding.bottom)
+            .disabled(store.isSubmitting)
         }
     }
     
+    private func submit() {
+        guard !store.isSubmitting else { return }
+        focusedField = nil
+        send(.didTapSignUpWithEmail)
+    }
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button {
                 send(.didTapNavigateToBack)
             } label: {
-                DesignSystemAsset.back.swiftUIImage.foregroundStyle(.black)
+                Label("Back", systemImage: "chevron.backward")
+                    .labelStyle(.iconOnly)
             }
-        }
-    }
-    
-    private var errorAlert: some View {
-        Button("OK") {
-            store.isPresented.toggle()
+            .disabled(store.isSubmitting)
         }
     }
 }

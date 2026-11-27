@@ -10,12 +10,8 @@ public struct DateDivider: View {
     public var body: some View {
         VStack(alignment: .trailing, spacing: 0) {
             HStack(spacing: 16) {
-                Text(
-                    "\(abbreviated()).\(Calendar.current.component(.day, from: date))"
-                ).font(
-                    DesignSystemFontFamily.Pretendard.regular
-                        .swiftUIFont(size: 16)
-                )
+                Text(date, format: .dateTime.month(.abbreviated).day())
+                    .font(.body)
                 VStack {
                     Divider()
                         .foregroundStyle(
@@ -25,18 +21,9 @@ public struct DateDivider: View {
                         )
                 }
             }
-            Text(date.formatted(date: .omitted, time: .shortened))
-                .font(
-                    DesignSystemFontFamily.Pretendard.regular
-                        .swiftUIFont(size: 13)
-                )
+            Text(date, format: .dateTime.hour().minute())
+                .font(.footnote)
                 .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
         }
     }
-}
-
-func abbreviated() -> String {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "MMM"
-    return formatter.string(from: Date.now)
 }

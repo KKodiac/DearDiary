@@ -1,7 +1,6 @@
 import SwiftUI
 
 public struct Card: View {
-    @Environment(\.colorScheme) private var colorScheme
     let title: String
     let content: String
     let timestamp: Date
@@ -13,30 +12,41 @@ public struct Card: View {
     }
     
     public var body: some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(DesignSystemAsset.ddBackgroundFill.swiftUIColor)
-            .overlay {
-                VStack {
-                    HStack {
-                        Text(title).font(.body).bold()
-                            .foregroundStyle(
-                                colorScheme == .dark ? .white : .black
-                            )
-                        Spacer()
-                        Text(timestamp.formatted(date: .omitted, time: .shortened))
-
-                    }
-                    Text(content)
-                        .multilineTextAlignment(.leading)
+        VStack(alignment: .leading, spacing: 8) {
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    titleText
+                        .fixedSize(horizontal: true, vertical: false)
+                    Spacer(minLength: 0)
+                    timeText
                 }
-                .padding(25)
-                .font(.caption)
-                .fontWeight(.light)
-                .foregroundStyle(
-                    colorScheme == .dark ? .white : .gray
-                )
+                VStack(alignment: .leading, spacing: 4) {
+                    titleText
+                    timeText
+                }
             }
-            .frame(height: 110)
-            .padding([.horizontal, .top])
+            Text(content)
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .lineLimit(3)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            DesignSystemAsset.ddBackgroundFill.swiftUIColor,
+            in: RoundedRectangle(cornerRadius: 16)
+        )
+        .padding(.horizontal)
+    }
+
+    private var titleText: some View {
+        Text(title)
+            .font(.headline)
+    }
+
+    private var timeText: some View {
+        Text(timestamp.formatted(date: .omitted, time: .shortened))
+            .font(.caption)
+            .foregroundStyle(.secondary)
     }
 }

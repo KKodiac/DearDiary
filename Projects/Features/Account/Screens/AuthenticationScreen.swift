@@ -6,20 +6,36 @@ import SwiftUI
 struct AuthenticationScreen: View {
     @Bindable public var store: StoreOf<Authentication>
     
+    @FocusState private var focusedField: Field?
+
+    private enum Field: Hashable {
+        case email, password
+    }
+
     public var body: some View {
         ZStack {
             DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea()
             
-            VStack {
-                Spacer()
-                welcomeSection
-                socialLoginButtons
-                PrimaryDivider().padding(.vertical, Layout.Spacing.medium)
-                credentialsSection
-                Spacer()
-                loginSection
+            ScrollView {
+                VStack(spacing: 24) {
+                    welcomeSection
+                    socialLoginButtons
+                        .disabled(store.isSubmitting)
+                    if store.isSubmitting {
+                        ProgressView("Signing in…")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    }
+                    PrimaryDivider()
+                    credentialsSection
+                    loginSection
+                }
+                .frame(maxWidth: 440)
+                .frame(maxWidth: .infinity)
+                .primaryHorizontalPadding()
+                .padding(.vertical, 24)
             }
-            .primaryHorizontalPadding()
+            .scrollDismissesKeyboard(.interactively)
         }
         .toolbar { toolbarContent }
         .alert($store.scope(state: \.alert, action: \.alert))
@@ -28,17 +44,18 @@ struct AuthenticationScreen: View {
     @ViewBuilder
     private var welcomeSection: some View {
         Text("Welcome Back")
-            .secondaryTextStyle()
-            .padding(.bottom, Layout.Padding.bottom)
+            .font(.largeTitle.bold())
     }
     
     @ViewBuilder
     private var socialLoginButtons: some View {
         HStack(spacing: Layout.Spacing.extraLarge) {
             CircularButton(image: DesignSystemAsset.google) {
+                focusedField = nil
                 send(.didTapSignInWithGoogle)
             }
             CircularButton(image: DesignSystemAsset.apple) {
+                focusedField = nil
                 send(.didTapSignInWithApple)
             }
         }
@@ -46,43 +63,62 @@ struct AuthenticationScreen: View {
     
     @ViewBuilder
     private var credentialsSection: some View {
-        VStack(spacing: Layout.Spacing.form) {
-            PrimaryTextField("Your Email", text: $store.email)
+        VStack(spacing: 12) {
+            TextField("Your Email", text: Binding(store.$email))
                 .textContentType(.emailAddress)
-            PrimarySecureField("Password", text: $store.password)
-                .textContentType(.newPassword)
+                .focused($focusedField, equals: .email)
+                .keyboardType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .submitLabel(.next)
+                .onSubmit { focusedField = .password }
+            SecureField("Password", text: Binding(store.$password))
+                .textContentType(.password)
+                .focused($focusedField, equals: .password)
+                .submitLabel(.go)
+                .onSubmit { submit() }
         }
-        .textFieldStyle(SecondaryTextFieldStyle())
-        .textInputAutocapitalization(.never)
+        .textFieldStyle(PrimaryTextFieldStyle())
+        .disabled(store.isSubmitting)
     }
     
     @ViewBuilder
     private var loginSection: some View {
-        VStack {
+        VStack(spacing: 16) {
             PrimaryButton(label: "Log In") {
-                send(.didTapSignInWithEmail)
+                submit()
             }
-            .padding(.vertical, Layout.Spacing.medium)
-            
+            .disabled(store.isSubmitting)
+
+
             Button {
                 send(.didTapNavigateToSignUp)
             } label: {
                 Text("Go to Sign Up")
-                    .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 14))
+                    .font(.subheadline.weight(.semibold))
+                    .frame(minHeight: 44)
                     .foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
             }
-            .padding(.bottom, Layout.Padding.bottom)
+            .disabled(store.isSubmitting)
         }
     }
     
+    private func submit() {
+        guard !store.isSubmitting else { return }
+        focusedField = nil
+        send(.didTapSignInWithEmail)
+    }
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .topBarLeading) {
             Button {
                 send(.didTapNavigateToBack)
             } label: {
-                DesignSystemAsset.back.swiftUIImage.foregroundStyle(.black)
+                Label("Back", systemImage: "chevron.backward")
+                    .labelStyle(.iconOnly)
             }
+            .disabled(store.isSubmitting)
         }
     }
 }

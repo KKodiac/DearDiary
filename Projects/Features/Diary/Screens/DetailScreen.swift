@@ -4,6 +4,7 @@ import SwiftUI
 
 public struct DiaryDetailView: View {
     @Bindable var store: StoreOf<Detail>
+    @FocusState private var isEditorFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
     
     public init(store: StoreOf<Detail>) {
@@ -11,14 +12,11 @@ public struct DiaryDetailView: View {
     }
     
     public var body: some View {
-        ZStack {
-            mainContent
-            editButtonOverlay
-        }
-        .padding(.horizontal)
-        .navigationBarBackButtonHidden()
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar { toolbarContent }
+        mainContent
+            .padding(.horizontal)
+            .navigationBarBackButtonHidden()
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { toolbarContent }
     }
     
     // MARK: - Main Content
@@ -40,43 +38,33 @@ public struct DiaryDetailView: View {
     
     private var titleText: some View {
         Text(store.entry.title)
-            .font(
-                DesignSystemFontFamily.Pretendard.bold
-                    .swiftUIFont(size: 23)
-            )
+            .font(.title2.bold())
     }
     
     private var contentEditor: some View {
         TextEditor(text: $store.entry.content)
+            .font(.body)
+            .focused($isEditorFocused)
+            .onChange(of: store.editable) { _, editable in
+                isEditorFocused = editable
+            }
+            .scrollDismissesKeyboard(.interactively)
             .multilineTextAlignment(.leading)
             .disabled(!store.editable)
-    }
-    
-    // MARK: - Edit Button
-    private var editButtonOverlay: some View {
-        VStack(alignment: .trailing) {
-            Spacer()
-            HStack {
-                Spacer()
-                editButton
-            }
-        }
-        .padding(.trailing, 10)
     }
     
     private var editButton: some View {
         Button {
             store.send(.didTapEditButton)
         } label: {
-            Image(systemName: store.editable ? "checkmark" : "pencil")
-                .bold()
-                .foregroundColor(.white)
-                .padding()
+            Label(
+                store.editable ? "Done editing" : "Edit entry",
+                systemImage: store.editable ? "checkmark" : "pencil"
+            )
+            .labelStyle(.iconOnly)
         }
-        .background(DesignSystemAsset.ddAccent.swiftUIColor)
-        .clipShape(Circle())
     }
-    
+
     // MARK: - Toolbar Content
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
@@ -88,7 +76,8 @@ public struct DiaryDetailView: View {
             dateTitle
         }
         
-        ToolbarItem(placement: .topBarTrailing) {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            editButton
             saveButton
         }
     }
@@ -97,8 +86,8 @@ public struct DiaryDetailView: View {
         Button {
             store.send(.didTapBackButton)
         } label: {
-            DesignSystemAsset.back.swiftUIImage
-                .foregroundStyle(.black)
+            Label("Back", systemImage: "chevron.backward")
+                .labelStyle(.iconOnly)
         }
     }
     
@@ -110,6 +99,7 @@ public struct DiaryDetailView: View {
     
     private var saveButton: some View {
         Button {
+            isEditorFocused = false
             store.send(.didTapSaveButton)
         } label: {
             Text("Save")

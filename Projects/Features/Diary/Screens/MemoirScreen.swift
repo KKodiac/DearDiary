@@ -45,11 +45,12 @@ public struct MemoirScreen: View {
     // MARK: - Header Section
     private var headerSection: some View {
         Group {
-            if store.showHeader {
-                expandedHeader
-                    .opacity(store.state.initialized ? 1 : 0)
-            } else {
-                collapsedHeader
+            if store.state.initialized {
+                if store.showHeader {
+                    expandedHeader
+                } else {
+                    collapsedHeader
+                }
             }
         }
     }
@@ -67,26 +68,25 @@ public struct MemoirScreen: View {
     }
     
     private var headerDivider: some View {
-        Divider()
-            .foregroundStyle(DesignSystemAsset.ddSecondary.swiftUIColor)
-            .overlay {
-                Text("Should I ask \(store.diaryName) to write your diary?")
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 15)
-                    .font(.caption)
-                    .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
-                    .background(DesignSystemAsset.toolbarBackground.swiftUIColor)
-            }
-            .padding([.horizontal, .bottom])
+        Text("Should I ask \(store.diaryName) to write your diary?")
+            .font(.footnote)
+            .multilineTextAlignment(.center)
+            .padding(.horizontal)
     }
-    
+
     private var actionButtons: some View {
-        HStack {
-            composeButton
-            hideButton
+        ViewThatFits {
+            HStack(spacing: 12) {
+                composeButton
+                hideButton
+            }
+            VStack(spacing: 8) {
+                composeButton
+                hideButton
+            }
         }
         .padding(.bottom)
-        .padding(.horizontal, 40)
+        .padding(.horizontal, 20)
     }
     
     private var collapsedHeader: some View {
@@ -98,17 +98,17 @@ public struct MemoirScreen: View {
         }
         .buttonStyle(.bordered)
         .buttonBorderShape(.circle)
+        .accessibilityLabel("Show composition options")
         .padding(.top, 10)
     }
     
     // MARK: - Main Content
     private var mainContent: some View {
         VStack {
-            Spacer()
-                .onAppear { store.send(.didAppear, animation: .bouncy) }
-            
             contentContainer
         }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+        .onAppear { store.send(.didAppear, animation: .bouncy) }
     }
     
     private var contentContainer: some View {
@@ -143,8 +143,11 @@ public struct MemoirScreen: View {
         Button {
             store.send(.didTapNavigateToBack)
         } label: {
-            DesignSystemAsset.back.swiftUIImage.foregroundStyle(.black)
+            DesignSystemAsset.back.swiftUIImage
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel("Back")
     }
     
     private var profileImage: some View {
@@ -153,6 +156,7 @@ public struct MemoirScreen: View {
             .frame(width: 40, height: 40)
             .overlay {
                 DesignSystemAsset.imoji.swiftUIImage
+                    .accessibilityHidden(true)
             }
     }
     
@@ -176,6 +180,7 @@ public struct MemoirScreen: View {
             }
         }
         .buttonStyle(ComposeButtonStyle())
+        .disabled(store.isWorking || store.dialogues.isEmpty)
     }
     
     private var hideButton: some View {
@@ -199,6 +204,7 @@ public struct MemoirScreen: View {
     private var initialView: some View {
         Group {
             DesignSystemAsset.character.swiftUIImage
+                .accessibilityHidden(true)
             Text("Say 'Hello!' to your Diary!")
                 .opacity(0.6)
                 .padding(.bottom, 20)
