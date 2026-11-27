@@ -64,8 +64,8 @@ public struct AccountView: View {
                 Text("Dear Diary").primaryTextStyle().offset(y: -50)
                 VStack {
                     Spacer()
-                    if store.error != nil {
-                        Text("Sign-in is unavailable. Please try again later.")
+                    if let message = store.error?.userMessage {
+                        Text(message)
                             .font(.callout)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)

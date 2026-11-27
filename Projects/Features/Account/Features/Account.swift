@@ -99,11 +99,13 @@ public struct Account {
                     return .none
                     
                 case .didTapSignInWithGoogle:
+                    state.error = nil
                     return SignIn()
                         .signInWithGoogle(state: &state.signIn)
                         .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithApple:
+                    state.error = nil
                     return SignIn()
                         .signInWithApple(state: &state.signIn)
                         .map { Action.internal(.signIn($0)) }
@@ -131,7 +133,9 @@ public struct Account {
                     return .send(.delegate(.navigateToDiary))
                     
                 case .signIn(.delegate(.didThrowError(let error))):
-                    state.error = FeatureError(error: error)
+                    if error.userMessage != nil {
+                        state.error = .signInThrewError(error)
+                    }
                     return .none
                     
                 case .didThrowError(let error):
@@ -180,6 +184,17 @@ extension Account {
         // MARK: Child Feature Errors
         case signInThrewError(SignIn.FeatureError)
         
+        var userMessage: String? {
+            switch self {
+            case .signInThrewError(let error):
+                return error.userMessage
+            case .authClientFailedToConfigure:
+                return "Sign-in is unavailable. Please try again later."
+            case .authenticationAttemptDidNotSucceed, .unknown:
+                return "Something went wrong. Please try again."
+            }
+        }
+
         public init(error: Error) {
             switch error {
                 case let error as SignIn.FeatureError:

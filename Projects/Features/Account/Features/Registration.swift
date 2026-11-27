@@ -101,14 +101,15 @@ public struct Registration: Sendable {
                 case .signUp(.delegate(.navigateToSetup)):
                     return .send(.delegate(.navigateToSetUp))
                 case .signUp(.delegate(.didThrowError(let error))):
+                    guard let message = error.userMessage else { return .none }
                     state.alert = AlertState {
-                        TextState("Sign Up Error")
+                        TextState("Couldn’t create your account")
                     } actions: {
                         ButtonState(role: .cancel) {
-                            TextState("Ok")
+                            TextState("OK")
                         }
                     } message: {
-                        TextState("Sign Up Attempt Failed: \(error.localizedDescription)")
+                        TextState(message)
                     }
                     return .none
                 }

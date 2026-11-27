@@ -119,14 +119,15 @@ public struct Authentication {
                 case .signIn(.delegate(.navigateToDiary)):
                     return .send(.delegate(.navigateToDiary))
                 case .signIn(.delegate(.didThrowError(let error))):
+                    guard let message = error.userMessage else { return .none }
                     state.alert = AlertState {
-                        TextState("Sign In Error")
+                        TextState("Couldn’t sign in")
                     } actions: {
                         ButtonState(role: .cancel) {
-                            TextState("Ok")
+                            TextState("OK")
                         }
                     } message: {
-                        TextState("Sign In Attempt Failed: \(error.localizedDescription)")
+                        TextState(message)
                     }
                     return .none
                 }

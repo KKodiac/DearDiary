@@ -74,13 +74,15 @@ extension SignUp {
         case authClientError(AuthError)
         case unknown
         
-        public init(error: Error) {
-            switch error {
-            case let error as AuthError:
-                self = .authClientError(error)
-            default:
-                self = .unknown
+        var userMessage: String? {
+            switch self {
+            case let .authClientError(error): return error.userMessage
+            case .unknown: return "Something went wrong. Please try again."
             }
+        }
+
+        public init(error: Error) {
+            self = .authClientError(AuthError(error: error))
         }
     }
 }
