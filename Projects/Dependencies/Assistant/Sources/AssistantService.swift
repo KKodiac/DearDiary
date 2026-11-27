@@ -85,13 +85,13 @@ private enum OnDeviceAssistantError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .deviceNotEligible:
-            "This device does not support Apple Intelligence. On-device diary writing is unavailable."
+            String(localized: "This device does not support Apple Intelligence. On-device diary writing is unavailable.")
         case .appleIntelligenceDisabled:
-            "Turn on Apple Intelligence in Settings to use on-device diary writing."
+            String(localized: "Turn on Apple Intelligence in Settings to use on-device diary writing.")
         case .modelNotReady:
-            "Apple Intelligence is still preparing its on-device model. Try again shortly."
+            String(localized: "Apple Intelligence is still preparing its on-device model. Try again shortly.")
         case .unavailable:
-            "Apple Intelligence is currently unavailable. Try again later."
+            String(localized: "Apple Intelligence is currently unavailable. Try again later.")
         }
     }
 }

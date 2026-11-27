@@ -127,7 +127,7 @@ public struct ResultScreen: View {
                 if store.isSaving {
                     ProgressView().tint(.white)
                 }
-                Text(store.isSaving ? "Saving…" : "Save")
+                Text(store.isSaving ? LocalizedStringKey("Saving…") : LocalizedStringKey("Save"))
             }
             .padding(.horizontal, 8)
         }

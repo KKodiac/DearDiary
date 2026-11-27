@@ -281,15 +281,6 @@
       }
     },
     {
-      "identity" : "swiftuicalendar",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/GGJJack/SwiftUICalendar",
-      "state" : {
-        "revision" : "01e11dc4847e5676db6d287d77076180b9282023",
-        "version" : "0.1.13"
-      }
-    },
-    {
       "identity" : "xctest-dynamic-overlay",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/xctest-dynamic-overlay",

@@ -1,0 +1,260 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Apple Intelligence is currently unavailable. Try again later.": {
+      "extractionState": "manual"
+    },
+    "Apple Intelligence is still preparing its on-device model. Try again shortly.": {
+      "extractionState": "manual"
+    },
+    "Cancel": {
+      "extractionState": "manual"
+    },
+    "Clear search": {
+      "extractionState": "manual"
+    },
+    "Compose": {
+      "extractionState": "manual"
+    },
+    "Confirm Password": {
+      "extractionState": "manual"
+    },
+    "Dear Diary": {
+      "extractionState": "manual"
+    },
+    "Diary entry unavailable": {
+      "extractionState": "manual"
+    },
+    "Diary name": {
+      "extractionState": "manual"
+    },
+    "Dismiss sign-out error": {
+      "extractionState": "manual"
+    },
+    "Error: %@": {
+      "comment": "Accessibility label. The placeholder is an error message.",
+      "extractionState": "manual"
+    },
+    "Find a memory": {
+      "extractionState": "manual"
+    },
+    "Get Started": {
+      "extractionState": "manual"
+    },
+    "Give your diary a name before saving.": {
+      "extractionState": "manual"
+    },
+    "Give your diary a name to get started.": {
+      "extractionState": "manual"
+    },
+    "Go back and compose your diary entry again.": {
+      "extractionState": "manual"
+    },
+    "Go to Sign In": {
+      "extractionState": "manual"
+    },
+    "Go to Sign Up": {
+      "extractionState": "manual"
+    },
+    "Have an Existing Account?": {
+      "extractionState": "manual"
+    },
+    "Hello World": {
+      "comment": "Unused visual label on the chat text field, which uses a separate prompt.",
+      "extractionState": "manual"
+    },
+    "Hello, %@": {
+      "comment": "Initial greeting to the diary. The placeholder is the diary’s name.",
+      "extractionState": "manual"
+    },
+    "Hide": {
+      "extractionState": "manual"
+    },
+    "Loading diary…": {
+      "extractionState": "manual"
+    },
+    "Log In": {
+      "extractionState": "manual"
+    },
+    "My AI Diary": {
+      "extractionState": "manual"
+    },
+    "Name your diary...": {
+      "extractionState": "manual"
+    },
+    "No entries for this day": {
+      "extractionState": "manual"
+    },
+    "No matching entries": {
+      "extractionState": "manual"
+    },
+    "OK": {
+      "extractionState": "manual"
+    },
+    "OR": {
+      "comment": "Divider between alternative sign-in methods.",
+      "extractionState": "manual"
+    },
+    "Ok": {
+      "extractionState": "manual"
+    },
+    "On-device writing requires iOS 26 or later and a device that supports Apple Intelligence.": {
+      "extractionState": "manual"
+    },
+    "Open diary entry": {
+      "extractionState": "manual"
+    },
+    "Password": {
+      "extractionState": "manual"
+    },
+    "Retry": {
+      "extractionState": "manual"
+    },
+    "Save": {
+      "extractionState": "manual"
+    },
+    "Save name": {
+      "extractionState": "manual"
+    },
+    "Saving…": {
+      "extractionState": "manual"
+    },
+    "Say 'Hello!' to your Diary!": {
+      "extractionState": "manual"
+    },
+    "Search Diary": {
+      "extractionState": "manual"
+    },
+    "Search diary": {
+      "extractionState": "manual"
+    },
+    "Search diary entries": {
+      "extractionState": "manual"
+    },
+    "Search for words in your diary titles and entries.": {
+      "extractionState": "manual"
+    },
+    "Search titles and entries": {
+      "extractionState": "manual"
+    },
+    "Search unavailable": {
+      "extractionState": "manual"
+    },
+    "Searching your diary…": {
+      "extractionState": "manual"
+    },
+    "Select the personality of your diary...": {
+      "extractionState": "manual"
+    },
+    "Settings": {
+      "extractionState": "manual"
+    },
+    "Should I ask %@ to write your diary?": {
+      "comment": "The placeholder is the diary’s name.",
+      "extractionState": "manual"
+    },
+    "Sign In Attempt Failed: %@": {
+      "comment": "The placeholder is the reported sign-in error.",
+      "extractionState": "manual"
+    },
+    "Sign In Error": {
+      "extractionState": "manual"
+    },
+    "Sign Up": {
+      "extractionState": "manual"
+    },
+    "Sign Up Attempt Failed: %@": {
+      "comment": "The placeholder is the reported sign-up error.",
+      "extractionState": "manual"
+    },
+    "Sign Up Error": {
+      "extractionState": "manual"
+    },
+    "Sign Up with Email": {
+      "extractionState": "manual"
+    },
+    "Sign in again before saving your diary.": {
+      "extractionState": "manual"
+    },
+    "Sign in again to load your diary entries.": {
+      "extractionState": "manual"
+    },
+    "Sign in again to search your diary.": {
+      "extractionState": "manual"
+    },
+    "Sign out": {
+      "extractionState": "manual"
+    },
+    "Sign out of Dear Diary?": {
+      "extractionState": "manual"
+    },
+    "Sign-in is unavailable. Please try again later.": {
+      "extractionState": "manual"
+    },
+    "Signing out keeps diary entries on this device. They are available when you sign back in to the same account.": {
+      "extractionState": "manual"
+    },
+    "Signing out…": {
+      "extractionState": "manual"
+    },
+    "Start a conversation to write a diary entry.": {
+      "extractionState": "manual"
+    },
+    "This device does not support Apple Intelligence. On-device diary writing is unavailable.": {
+      "extractionState": "manual"
+    },
+    "Try Again": {
+      "extractionState": "manual"
+    },
+    "Try another word or a shorter phrase.": {
+      "extractionState": "manual"
+    },
+    "Turn on Apple Intelligence in Settings to use on-device diary writing.": {
+      "extractionState": "manual"
+    },
+    "Waiting for your diary…": {
+      "extractionState": "manual"
+    },
+    "Welcome Back": {
+      "extractionState": "manual"
+    },
+    "What happened today?": {
+      "extractionState": "manual"
+    },
+    "Writing your diary…": {
+      "extractionState": "manual"
+    },
+    "You couldn’t be signed out. Open Settings to try again.": {
+      "extractionState": "manual"
+    },
+    "You couldn’t be signed out. Please try again.": {
+      "extractionState": "manual"
+    },
+    "Your Email": {
+      "extractionState": "manual"
+    },
+    "Your Name": {
+      "extractionState": "manual"
+    },
+    "Your diary": {
+      "extractionState": "manual"
+    },
+    "Your diary couldn’t be saved. Your draft is still here. Tap Save to try again.": {
+      "extractionState": "manual"
+    },
+    "Your diary couldn’t be searched. Please try again.": {
+      "extractionState": "manual"
+    },
+    "Your diary entries couldn’t be loaded. Please try again.": {
+      "extractionState": "manual"
+    },
+    "basic": {
+      "comment": "The default diary personality.",
+      "extractionState": "manual"
+    },
+    "ex) Kitty": {
+      "extractionState": "manual"
+    }
+  },
+  "version": "1.0"
+}

@@ -162,7 +162,7 @@ public struct MemoirScreen: View {
     
     private var profileInfo: some View {
         VStack(alignment: .leading) {
-            Text("\(store.diaryName)")
+            Text(store.diaryName)
                 .fontWeight(.medium)
             Text("My AI Diary")
                 .font(.caption)

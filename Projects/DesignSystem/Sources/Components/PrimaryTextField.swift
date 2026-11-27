@@ -1,11 +1,11 @@
 import SwiftUI
 
 public struct PrimaryTextField: View {
-    public let header: String
+    public let header: LocalizedStringKey
     @Binding public var text: String
     @Binding public var status: TextFieldStatus
     
-    public init(_ header: String, text: Binding<String>, status: Binding<TextFieldStatus> = .constant(.default)) {
+    public init(_ header: LocalizedStringKey, text: Binding<String>, status: Binding<TextFieldStatus> = .constant(.default)) {
         self.header = header
         self._text = text
         self._status = status

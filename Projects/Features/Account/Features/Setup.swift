@@ -63,7 +63,7 @@ public struct Setup: Sendable {
                     case .didTapGetStarted:
                         let name = state.name.trimmingCharacters(in: .whitespacesAndNewlines)
                         guard !name.isEmpty else {
-                            state.errorMessage = "Give your diary a name to get started."
+                            state.errorMessage = String(localized: "Give your diary a name to get started.")
                             return .none
                         }
                         state.$name.withLock { $0 = name }

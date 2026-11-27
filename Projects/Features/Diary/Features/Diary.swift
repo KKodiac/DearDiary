@@ -112,7 +112,7 @@ public struct Diary {
             case let .internal(.didFailLoading(generation)):
                 guard generation == state.loadGeneration else { return .none }
                 state.isLoading = false
-                state.loadError = "Your diary entries couldn’t be loaded. Please try again."
+                state.loadError = String(localized: "Your diary entries couldn’t be loaded. Please try again.")
                 return .none
             case let .view(.didTapEntryCard(entry)):
                 state.destination = .detail(Detail.State(entry: entry))
@@ -151,7 +151,7 @@ public struct Diary {
                 return .merge(.cancel(id: CancelID.load), .send(.delegate(.signedOut)))
             case .internal(.didFailSignOut):
                 state.isSigningOut = false
-                state.sessionError = "You couldn’t be signed out. Open Settings to try again."
+                state.sessionError = String(localized: "You couldn’t be signed out. Open Settings to try again.")
                 if case .setting = state.destination {
                     return .send(.destination(.presented(.setting(.signOutFailed))))
                 }
@@ -173,7 +173,7 @@ public struct Diary {
         guard !state.uid.isEmpty,
               let interval = state.calendar.dateInterval(of: .day, for: state.focusDate) else {
             state.isLoading = false
-            state.loadError = "Sign in again to load your diary entries."
+            state.loadError = String(localized: "Sign in again to load your diary entries.")
             return .cancel(id: CancelID.load)
         }
         state.isLoading = true

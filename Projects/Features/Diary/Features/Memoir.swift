@@ -52,7 +52,7 @@ public struct Memoir {
             case .didTapSayHelloButton:
                 guard !state.isWorking else { return .none }
                 withAnimation(.bouncy) { state.initialized = true }
-                let message = "Hello, \(state.diaryName)"
+                let message = String(localized: "Hello, \(state.diaryName)")
                 state.dialogues.append(Dialogue(content: message, createdAt: .now, role: .user))
                 state.failedMessage = message
                 state.retryingComposition = false

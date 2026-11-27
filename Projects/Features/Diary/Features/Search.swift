@@ -62,7 +62,7 @@ public struct Search {
             case let .searchFailed(generation):
                 guard generation == state.generation else { return .none }
                 state.isLoading = false
-                state.errorMessage = "Your diary couldn’t be searched. Please try again."
+                state.errorMessage = String(localized: "Your diary couldn’t be searched. Please try again.")
                 return .none
             case let .didTapEntry(entry):
                 guard state.entries.contains(where: { $0.id == entry.id }) else { return .none }
@@ -82,7 +82,7 @@ public struct Search {
         let query = state.query.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !query.isEmpty else { return .cancel(id: CancelID.search) }
         guard !state.ownerID.isEmpty else {
-            state.errorMessage = "Sign in again to search your diary."
+            state.errorMessage = String(localized: "Sign in again to search your diary.")
             return .cancel(id: CancelID.search)
         }
 

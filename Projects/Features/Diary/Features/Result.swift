@@ -58,7 +58,7 @@ public struct Result {
             case .didTapSaveButton:
                 guard let entry = state.entry, !state.isSaving else { return .none }
                 guard !state.uid.isEmpty else {
-                    state.saveError = "Sign in again before saving your diary."
+                    state.saveError = String(localized: "Sign in again before saving your diary.")
                     return .none
                 }
                 state.isSaving = true
@@ -91,7 +91,7 @@ public struct Result {
                 return .none
             case .didFailSaving:
                 state.isSaving = false
-                state.saveError = "Your diary couldn’t be saved. Your draft is still here. Tap Save to try again."
+                state.saveError = String(localized: "Your diary couldn’t be saved. Your draft is still here. Tap Save to try again.")
                 return .none
 
             case .didTapBackButton:

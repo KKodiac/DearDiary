@@ -97,7 +97,7 @@ Workspace.swift            Workspace definition
 
 `App` composes `Features` (Account and Diary). Account and Diary declare direct dependencies on the service targets and third-party products they import. `Dependencies` is a Tuist project that groups the separate Auth, Assistant, and Persistence modules; it has no umbrella target or re-export module. Public clients such as `AuthClient`, `SessionClient`, `AssistantClient`, and `EntryStoreClient` define the interfaces consumed by features. Each feature has reducer implementations in `Features/`, SwiftUI views in `Screens/` (destination views use `Screen`; feature root containers use `View`), domain values in `ValueObjects/`, an example app, and tests.
 
-All app and internal module targets use iOS 18 and Swift 5 language mode for Debug and Release. This language mode does not lower the compiler requirement: TCA 1.26.2 includes a Swift 6.1 package manifest (and a newer primary manifest), so package resolution requires Swift 6.1 or later. Strict Swift 6 migration remains separate work. External packages are pinned in `Tuist/Package.swift`: TCA, SnapshotTesting, SwiftUICalendar, Firebase, and Google Sign-In.
+All app and internal module targets use iOS 18 and Swift 5 language mode for Debug and Release. This language mode does not lower the compiler requirement: TCA 1.26.2 includes a Swift 6.1 package manifest (and a newer primary manifest), so package resolution requires Swift 6.1 or later. Strict Swift 6 migration remains separate work. External packages are pinned in `Tuist/Package.swift`: TCA, SnapshotTesting, Firebase, and Google Sign-In.
 
 ## Dependency usage
 
@@ -105,11 +105,14 @@ All app and internal module targets use iOS 18 and Swift 5 language mode for Deb
 | --- | --- |
 | TCA | App/feature reducers, dependency clients, and reducer tests |
 | SnapshotTesting | Account UI snapshot tests |
-| SwiftUICalendar | Diary calendar and selected-date values |
 | Firebase | Authentication and core app configuration |
 | GoogleSignIn | Google authentication via `GIDSignIn` |
 
 The app uses custom Google sign-in controls; the unused `GoogleSignInSwift` product and imports were removed. The previous hosted assistant networking layer was replaced by Foundation Models. Third-party modules are linked directly by the targets that use them.
+
+## Localization
+
+`Projects/App/Resources/Localizable.xcstrings` is the shared string catalog for DearDiary and the feature example apps. Add new interface strings there and use SwiftUI localized labels or `String(localized:)` for messages produced outside views. The month grid and diary day queries use the current system calendar and time zone.
 
 ## Existing diary data
 

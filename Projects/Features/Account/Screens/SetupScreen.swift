@@ -42,6 +42,12 @@ struct SetupScreen: View {
         }
     }
     
+    private func personalityTitle(_ personality: Personality) -> Text {
+        switch personality {
+        case .basic: Text("basic", comment: "The default diary personality")
+        }
+    }
+
     private var formSection: some View {
         VStack(alignment: .leading, spacing: Layout.Spacing.medium) {
             diaryNameSection
@@ -78,7 +84,7 @@ struct SetupScreen: View {
         DisclosureGroup(
             isExpanded: $store.expanded,
             content: { personalityOptions },
-            label: { Text(store.personality.rawValue) }
+            label: { personalityTitle(store.personality) }
         )
         .padding(Layout.Padding.form)
         .background(DesignSystemAsset.ddFill.swiftUIColor)
@@ -97,7 +103,7 @@ struct SetupScreen: View {
                 send(.didTapPicker(personality))
             } label: {
                 HStack {
-                    Text(personality.rawValue).font(.headline)
+                    personalityTitle(personality).font(.headline)
                     Spacer()
                 }
             }
