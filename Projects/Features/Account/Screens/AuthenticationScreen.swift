@@ -4,7 +4,7 @@ import SwiftUI
 
 @ViewAction(for: Authentication.self)
 struct AuthenticationScreen: View {
-    @Bindable var store: StoreOf<Authentication>
+    @Bindable public var store: StoreOf<Authentication>
     
     public var body: some View {
         ZStack {

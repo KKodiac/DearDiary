@@ -52,11 +52,10 @@ extension SignUp {
             )
             
             let clientUID = authData.user.uid
-            logger.log("Client UID: \(clientUID)")
             await state.$clientUID.withLock { $0 = clientUID }
             
             guard let isNewUser = authData.additionalUserInfo?.isNewUser, isNewUser else {
-                logger.error("Additional UserInfo not available for: \(authData.user.uid)")
+                logger.error("Additional user information is unavailable after registration.")
                 throw AuthError.unExpectedError(FeatureError.unknown)
             }
             

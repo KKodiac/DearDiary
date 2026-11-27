@@ -5,7 +5,7 @@ import SwiftUI
 
 @ViewAction(for: Diary.self)
 public struct DiaryView: View {
-    @Bindable var store: StoreOf<Diary>
+    @Bindable public var store: StoreOf<Diary>
     @StateObject private var controller = CalendarController()
     @Environment(\.colorScheme) private var colorScheme
     
@@ -18,8 +18,10 @@ public struct DiaryView: View {
             mainContent
             floatingActionButton
         }
-        .alert("Would you like to sign out?", isPresented: $store.isAlertPresented) {
-            signOutAlert
+        .navigationDestination(
+            item: $store.scope(state: \.destination?.search, action: \.destination.search)
+        ) { store in
+            SearchScreen(store: store)
         }
         .navigationDestination(
             item: $store.scope(
@@ -50,6 +52,13 @@ public struct DiaryView: View {
         HStack {
             Text("Dear Diary").primaryTextStyle()
             Spacer()
+            Button {
+                send(.didTapSearch)
+            } label: {
+                Image(systemName: "magnifyingglass")
+                    .frame(minWidth: 44, minHeight: 44)
+            }
+            .accessibilityLabel("Search diary")
             settingsButton
         }
         .padding(20)
@@ -61,7 +70,6 @@ public struct DiaryView: View {
             )
         ) { store in
             SettingView(store: store)
-                .navigationBarBackButtonHidden()
         }
     }
     
@@ -187,16 +195,34 @@ public struct DiaryView: View {
             .padding()
     }
     
+    @ViewBuilder
     private var entriesList: some View {
-        ScrollView {
-            LazyVStack {
-                ForEach(store.focusedEntries, id: \.self) { entry in
-                    entryCard(for: entry)
+        if store.isLoading {
+            ProgressView("Loading diary…")
+                .padding()
+        } else if let error = store.loadError {
+            VStack(spacing: 12) {
+                Text(error).font(.callout)
+                Button("Try Again") { send(.didTapRetry) }
+            }
+            .padding()
+        } else if store.hasLoaded && store.focusedEntries.isEmpty {
+            ContentUnavailableView(
+                "No entries for this day",
+                systemImage: "book.closed",
+                description: Text("Start a conversation to write a diary entry.")
+            )
+        } else {
+            ScrollView {
+                LazyVStack {
+                    ForEach(store.focusedEntries, id: \.self) { entry in
+                        entryCard(for: entry)
+                    }
                 }
             }
         }
     }
-    
+
     private func entryCard(for entry: Entry) -> some View {
         Button {
             send(.didTapEntryCard(entry))
@@ -220,17 +246,6 @@ public struct DiaryView: View {
         .padding()
     }
     
-    private var signOutAlert: some View {
-        Group {
-            Button("Cancel", role: .cancel) {
-                store.send(.alert(.didAlertTapCancelButton))
-            }
-            Button("Yes", role: .destructive) {
-                store.send(.alert(.didAlertTapAcceptButton))
-            }
-        }
-    }
-    
     private var settingsButton: some View {
         Button {
             send(.didTapNavigateToSetting)
@@ -239,7 +254,9 @@ public struct DiaryView: View {
                 .font(.title)
                 .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
                 .foregroundStyle(DesignSystemAsset.ddSecondary.swiftUIColor)
+                .frame(minWidth: 44, minHeight: 44)
         }
+        .accessibilityLabel("Settings")
     }
 }
 

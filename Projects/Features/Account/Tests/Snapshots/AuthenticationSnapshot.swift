@@ -27,7 +27,7 @@ final class AuthenticationSnapshot: XCTestCase {
         let view = AuthenticationScreen(
             store: StoreOf<Authentication>(
                 initialState: Authentication.State(
-                    clientUID: Shared("")
+                    clientUID: Shared(value: "")
                 ),
                 reducer: { Authentication() },
                 withDependencies: {

@@ -73,6 +73,8 @@ Tuist/.build
 Tuist/Plugins/DependencyPlugin/ProjectDescriptionHelpers/Project+Secrets.swift
 .package.resolved
 *.resolved
+# Keep the reviewed app dependency graph reproducible.
+!Tuist/Package.resolved
 
 ### VSCode ###
 .vscode/

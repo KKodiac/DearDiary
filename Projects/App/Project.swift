@@ -10,8 +10,10 @@ let project = Project(
             destinations: Project.Environment.destinations,
             product: .app,
             bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).App",
+            deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: ["Sources/**"],
+            resources: ["Resources/**"],
             entitlements: .dictionary([
                 "com.apple.developer.applesignin": .array(["Default"])
             ]),
@@ -45,11 +47,12 @@ let project = Project(
             destinations: Project.Environment.destinations,
             product: .unitTests,
             bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).DearDiaryTests",
+            deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .default,
             sources: ["Tests/**"],
             resources: [],
             dependencies: [.target(name: "DearDiary")],
-            settings: .settings(configurations: [.defaultTest])
+            settings: .settings(configurations: [.defaultDebug, .defaultRelease])
         ),
     ]
 )

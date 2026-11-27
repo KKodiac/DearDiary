@@ -16,7 +16,7 @@ let package = Package(
     dependencies: [
         .package(
             url: "https://github.com/pointfreeco/swift-composable-architecture.git",
-            exact: Version(stringLiteral: "1.15.2")
+            exact: Version(stringLiteral: "1.26.2")
         ),
         .package(
             url: "https://github.com/pointfreeco/swift-snapshot-testing",

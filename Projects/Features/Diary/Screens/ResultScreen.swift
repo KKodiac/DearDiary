@@ -12,8 +12,16 @@ public struct ResultScreen: View {
     public var body: some View {
         NavigationStack {
             ZStack {
-                mainContent
-                editButton
+                if store.entry != nil {
+                    mainContent
+                    editButton
+                } else {
+                    ContentUnavailableView(
+                        "Diary entry unavailable",
+                        systemImage: "doc.questionmark",
+                        description: Text("Go back and compose your diary entry again.")
+                    )
+                }
             }
             .onAppear { store.send(.didAppear) }
             .padding(.horizontal)
@@ -29,15 +37,21 @@ public struct ResultScreen: View {
             dateDivider
             titleText
             contentEditor
+            if let error = store.saveError {
+                Text(error).foregroundStyle(.red).font(.callout)
+            }
         }
     }
     
+    @ViewBuilder
     private var dateDivider: some View {
-        DateDivider(
-            colorScheme: colorScheme,
-            date: Calendar.current.startOfDay(for: store.entry!.createdAt)
-        )
-        .padding(.bottom, 10)
+        if let entry = store.entry {
+            DateDivider(
+                colorScheme: colorScheme,
+                date: Calendar.current.startOfDay(for: entry.createdAt)
+            )
+            .padding(.bottom, 10)
+        }
     }
     
     private var titleText: some View {
@@ -51,7 +65,7 @@ public struct ResultScreen: View {
     private var contentEditor: some View {
         TextEditor(text: $store.content)
             .multilineTextAlignment(.leading)
-            .disabled(!store.editable)
+            .disabled(!store.editable || store.isSaving)
     }
     
     // MARK: - Edit Button
@@ -110,10 +124,11 @@ public struct ResultScreen: View {
         Button {
             store.send(.didTapSaveButton)
         } label: {
-            Text("Save")
+            Text(store.isSaving ? "Saving…" : "Save")
                 .padding(.horizontal, 10)
         }
         .buttonStyle(ToolbarPrimaryButtonStyle())
+        .disabled(store.entry == nil || store.isSaving)
     }
 }
 

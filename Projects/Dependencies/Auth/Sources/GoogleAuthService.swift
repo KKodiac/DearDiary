@@ -1,7 +1,6 @@
 import Firebase
 import FirebaseAuth
 import GoogleSignIn
-import GoogleSignInSwift
 
 extension GoogleAuthService: GoogleAuthServiceInterface {
     @MainActor

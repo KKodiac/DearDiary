@@ -9,6 +9,7 @@ let project = Project(
             destinations: Project.Environment.destinations,
             product: .staticLibrary,
             bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features.Diary",
+            deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: [.glob(.relativeToCurrentFile("**"), excluding: Project.Environment.staticLibraryExcludedSource)],
             dependencies: [
@@ -36,6 +37,7 @@ let project = Project(
             destinations: Project.Environment.destinations,
             product: .unitTests,
             bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features.DiaryTest",
+            deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .extendingDefault(with: Project.Secrets.testInfoPList),
             sources: [.glob(.relativeToCurrentFile("Tests/**"))],
             dependencies: [
@@ -49,6 +51,7 @@ let project = Project(
             destinations: Project.Environment.destinations,
             product: .app,
             bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features.DiaryExample",
+            deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: [.glob(.relativeToCurrentFile("Example/*"))],
             dependencies: [

@@ -8,7 +8,7 @@ import GoogleSignIn
 @Reducer
 struct DearDiary {
     @ObservableState
-    struct State: Sendable {
+    struct State: Sendable, Equatable {
         @Shared(.appStorage("client_uid")) var uid = ""
         @Shared(.appStorage("diary_name")) var diaryName = ""
         
@@ -38,6 +38,9 @@ struct DearDiary {
                 else if state.diaryName.isEmpty { state.destination = .auth(Account.State(destination: .setUp(Setup.State()))) }
                 else if !state.diaryName.isEmpty && !state.uid.isEmpty { state.destination = .diary(Diary.State()) }
                 return .none
+            case \.destination.diary.delegate.signedOut:
+                state.destination = .auth(Account.State())
+                return .none
             case \.destination.auth.delegate.navigateToDiary:
                 state.destination = .diary(Diary.State())
                 return .none
@@ -52,9 +55,6 @@ struct DearDiary {
             }
         }
         .ifLet(\.$destination, action: \.destination)
-        .onChange(of: \.uid) { oldValue, newValue in
-            
-        }
     }
     
     @Reducer(state: .equatable, .sendable, action: .equatable, .sendable)

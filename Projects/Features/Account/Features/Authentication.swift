@@ -26,9 +26,9 @@ public struct Authentication {
             password  : String = "",
             clientUID: Shared<String>
         ) {
-            self._user = Shared(user)
-            self._email = Shared(email)
-            self._password = Shared(password)
+            self._user = Shared(value: user)
+            self._email = Shared(value: email)
+            self._password = Shared(value: password)
             self._clientUID = clientUID
             self.signIn = SignIn.State(
                 clientUID: clientUID

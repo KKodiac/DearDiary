@@ -21,9 +21,9 @@ public struct AuthClient {
     }
     
     @MainActor
-    public func configure() -> Void {
+    public func configure() throws {
         guard firebase.isConfigured == false else { return }
-        firebase.configure()
+        try firebase.configure()
     }
     
     @discardableResult
@@ -32,6 +32,7 @@ public struct AuthClient {
             throw AuthError.firebaseAuthError(.clientIDIsNil)
         }
         
+        guard firebase.isConfigured else { throw FirebaseAuthError.failedToConfigureFirebaseApp }
         do {
             let credential = try await google.login(clientID)
             let result = try await firebase.signIn(credential)
@@ -44,6 +45,7 @@ public struct AuthClient {
     
     @discardableResult
     public func signInWithApple() async throws -> AuthDataResult {
+        guard firebase.isConfigured else { throw FirebaseAuthError.failedToConfigureFirebaseApp }
         do {
             let credential = try await apple.login()
             let result = try await firebase.signIn(credential)
@@ -59,6 +61,7 @@ public struct AuthClient {
         email: String,
         password: String
     ) async throws -> AuthDataResult {
+        guard firebase.isConfigured else { throw FirebaseAuthError.failedToConfigureFirebaseApp }
         do {
             let result = try await firebase.signIn(email: email, password: password)
             
@@ -74,6 +77,7 @@ public struct AuthClient {
         password: String,
         confirmPassword: String
     ) async throws -> AuthDataResult {
+        guard firebase.isConfigured else { throw FirebaseAuthError.failedToConfigureFirebaseApp }
         do {
             try validator.validate(password: password, with: confirmPassword)
             let result = try await firebase.signUp(email: email, password: password)

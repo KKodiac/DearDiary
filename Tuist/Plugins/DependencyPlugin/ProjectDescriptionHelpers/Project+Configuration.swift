@@ -57,11 +57,11 @@ extension Project {
         static func value(for settings: Project.Configuration) -> ProjectDescription.SettingValue {
             switch settings {
             case .debug:
-                return "5.10"
+                return "5.0"
             case .release:
-                return "6.0"
+                return "5.0"
             case .test:
-                return "6.0"
+                return "5.0"
             }
         }
     }

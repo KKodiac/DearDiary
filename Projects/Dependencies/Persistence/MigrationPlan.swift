@@ -1,16 +1,17 @@
 import SwiftData
 
 enum MigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] = [
-        PersistenceSchemaV1.self
+    static let schemas: [any VersionedSchema.Type] = [
+        PersistenceSchemaV1.self,
+        PersistenceSchemaV2.self
     ]
     
-    static var stages: [MigrationStage] = [
-        
+    static let stages: [MigrationStage] = [
+        .lightweight(fromVersion: PersistenceSchemaV1.self, toVersion: PersistenceSchemaV2.self)
     ]
 }
 
-public typealias EntryModel = PersistenceSchemaV1.EntryModel
-public typealias UserModel = PersistenceSchemaV1.UserModel
-public typealias DialogueModel = PersistenceSchemaV1.DialogueModel
-public typealias Role = PersistenceSchemaV1.Role
+public typealias EntryModel = PersistenceSchemaV2.EntryModel
+public typealias UserModel = PersistenceSchemaV2.UserModel
+public typealias DialogueModel = PersistenceSchemaV2.DialogueModel
+public typealias Role = PersistenceSchemaV2.Role

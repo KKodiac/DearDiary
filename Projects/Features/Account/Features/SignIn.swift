@@ -46,15 +46,16 @@ extension SignIn {
             let authData = try await authClient.signInWithApple()
             
             let clientUID = authData.user.uid
-            logger.log("Client UID: \(clientUID)")
             await state.$clientUID.withLock { $0 = clientUID }
             
-            if let isNewUser = authData.additionalUserInfo?.isNewUser {
-                logger.log("New User: \(isNewUser)")
-                await state.$isInitialUser.withLock { $0 = isNewUser }
-                if isNewUser { await send(.delegate(.navigateToSetup)) }
+            let isNewUser = authData.additionalUserInfo?.isNewUser ?? false
+            state.$isInitialUser.withLock { $0 = isNewUser }
+            @Shared(.appStorage("diary_name")) var diaryName = ""
+            if isNewUser || diaryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                await send(.delegate(.navigateToSetup))
+            } else {
+                await send(.delegate(.navigateToDiary))
             }
-            await send(.delegate(.navigateToDiary))
         } catch: { error, send in
             logger.error("Error: \(error)")
             await send(.delegate(.didThrowError(FeatureError(error: error))))
@@ -66,15 +67,16 @@ extension SignIn {
             let authData = try await authClient.signInWithGoogle()
             
             let clientUID = authData.user.uid
-            logger.log("Client UID: \(clientUID)")
             await state.$clientUID.withLock { $0 = clientUID }
             
-            if let isNewUser = authData.additionalUserInfo?.isNewUser {
-                logger.log("New User: \(isNewUser)")
-                await state.$isInitialUser.withLock { $0 = isNewUser }
-                if isNewUser { await send(.delegate(.navigateToSetup)) }
+            let isNewUser = authData.additionalUserInfo?.isNewUser ?? false
+            state.$isInitialUser.withLock { $0 = isNewUser }
+            @Shared(.appStorage("diary_name")) var diaryName = ""
+            if isNewUser || diaryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                await send(.delegate(.navigateToSetup))
+            } else {
+                await send(.delegate(.navigateToDiary))
             }
-            await send(.delegate(.navigateToDiary))
         } catch: { error, send in
             logger.error("Error: \(error)")
             await send(.delegate(.didThrowError(FeatureError(error: error))))
@@ -89,15 +91,16 @@ extension SignIn {
             )
             
             let clientUID = authData.user.uid
-            logger.log("Client UID: \(clientUID)")
             await state.$clientUID.withLock { $0 = clientUID }
             
-            if let isNewUser = authData.additionalUserInfo?.isNewUser {
-                logger.log("New User: \(isNewUser)")
-                await state.$isInitialUser.withLock { $0 = isNewUser }
-                if isNewUser { await send(.delegate(.navigateToSetup)) }
+            let isNewUser = authData.additionalUserInfo?.isNewUser ?? false
+            state.$isInitialUser.withLock { $0 = isNewUser }
+            @Shared(.appStorage("diary_name")) var diaryName = ""
+            if isNewUser || diaryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                await send(.delegate(.navigateToSetup))
+            } else {
+                await send(.delegate(.navigateToDiary))
             }
-            await send(.delegate(.navigateToDiary))
         } catch: { error, send in
             logger.error("Error: \(error)")
             await send(.delegate(.didThrowError(FeatureError(error: error))))

@@ -115,7 +115,7 @@ public struct Memoir {
                 
             case .didReceiveEntry(let entry):
                 state.composing = false
-                state.destination = .result(Result.State(entry: entry))
+                state.destination = .result(Result.State(entry: entry, dialogues: state.dialogues))
                 return .none
                 
             case .didReceiveCancelled:

@@ -4,7 +4,7 @@ import SwiftUI
 
 @ViewAction(for: Registration.self)
 struct RegistrationScreen: View {
-    @Bindable var store: StoreOf<Registration>
+    @Bindable public var store: StoreOf<Registration>
     
     public var body: some View {
         ZStack {

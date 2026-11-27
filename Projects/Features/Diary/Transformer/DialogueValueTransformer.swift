@@ -9,10 +9,15 @@ public final class DialogueValueTransformer: ValueTransformer {
         return DialogueModel.self
     }
     
+    public override class func allowsReverseTransformation() -> Bool {
+        true
+    }
+
     // Perform the transformation from Dialogue to DialogueModel
     public override func transformedValue(_ value: Any?) -> Any? {
         guard let dialogue = value as? Dialogue else { return nil }
         return DialogueModel(
+            id: dialogue.id,
             content: dialogue.content,
             createAt: dialogue.createdAt,
             role: dialogue.role
@@ -23,6 +28,7 @@ public final class DialogueValueTransformer: ValueTransformer {
     public override func reverseTransformedValue(_ value: Any?) -> Any? {
         guard let dialogueModel = value as? DialogueModel else { return nil }
         return Dialogue(
+            id: dialogueModel.id,
             content: dialogueModel.content,
             createdAt: dialogueModel.createAt,
             role: dialogueModel.role

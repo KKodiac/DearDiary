@@ -20,4 +20,4 @@ public protocol UserQueryRepository {
     func find(by name: String) async -> Predicate<UserModel>
 }
 
-public protocol UserRepository: UserCommandRepository, UserQueryRepository { }
+public protocol UserRepository: UserCommandRepository, UserQueryRepository, Sendable { }

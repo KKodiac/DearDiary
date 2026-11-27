@@ -90,7 +90,9 @@ public struct Account {
                 switch action {
                 case .didAppear:
                     return .run(priority: .userInitiated) { @MainActor send in
-                        authClient.configure()
+                        try authClient.configure()
+                    } catch: { _, send in
+                        await send(.internal(.didThrowError(.authClientFailedToConfigure)))
                     }
                     
                 case .didReceiveOpenURL(_):
@@ -164,16 +166,6 @@ public struct Account {
             }
         }
         .ifLet(\.$destination, action: \.destination)
-        .onChange(of: \.clientUID) { oldValue, newValue in
-            Reduce { state, action in
-                guard state.isInitialUser || state.diaryName.isEmpty else {
-                    return .send(.delegate(.navigateToDiary))
-                }
-                state.destination = .setUp(Setup.State())
-                return .none
-            }
-        }
-        ._printChanges()
     }
     
     public init() { }

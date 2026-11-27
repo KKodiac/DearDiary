@@ -9,6 +9,7 @@ let project = Project(
             destinations: Project.Environment.destinations,
             product: .staticLibrary,
             bundleId: "\(Project.Environment.bundlePrefix).\(Project.Environment.appName).Features",
+            deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: [.glob(.relativeToCurrentFile("Features/*"))],
             dependencies: [

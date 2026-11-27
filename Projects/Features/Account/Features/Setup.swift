@@ -9,13 +9,14 @@ public struct Setup: Sendable {
     public struct State: Sendable, Equatable {
         var expanded: Bool
         var personalities: [Personality]
+        var errorMessage: String?
         
         @Shared var name: String
         @Shared var personality: Personality
         
         public init(
             expanded: Bool = false,
-            personalities: [Personality] = [],
+            personalities: [Personality] = Personality.allCases,
             name: String = "",
             personality: Personality = .basic
         ) {
@@ -56,10 +57,17 @@ public struct Setup: Sendable {
                     case .didAppear:
                         return .none
                     case .didTapPicker(let personality):
-                        state.personality = personality
+                        state.$personality.withLock { $0 = personality }
                         state.expanded.toggle()
                         return .none
                     case .didTapGetStarted:
+                        let name = state.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !name.isEmpty else {
+                            state.errorMessage = "Give your diary a name to get started."
+                            return .none
+                        }
+                        state.$name.withLock { $0 = name }
+                        state.errorMessage = nil
                         return .send(.delegate(.navigateToDiary))
                     case .binding(_):
                         return .none

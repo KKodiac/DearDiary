@@ -9,10 +9,15 @@ public final class EntryValueTransformer: ValueTransformer {
         return EntryModel.self
     }
     
+    public override class func allowsReverseTransformation() -> Bool {
+        true
+    }
+
     // Perform the transformation from Entry to EntryModel
     public override func transformedValue(_ value: Any?) -> Any? {
         guard let entry = value as? Entry else { return nil }
         return EntryModel(
+            id: entry.id,
             title: entry.title,
             content: entry.content,
             createdAt: entry.createdAt
@@ -23,6 +28,7 @@ public final class EntryValueTransformer: ValueTransformer {
     public override func reverseTransformedValue(_ value: Any?) -> Any? {
         guard let entryModel = value as? EntryModel else { return nil }
         return Entry(
+            id: entryModel.id,
             title: entryModel.title,
             content: entryModel.content,
             createdAt: entryModel.createdAt

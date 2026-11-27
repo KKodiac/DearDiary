@@ -1,106 +1,37 @@
-import Foundation
 import Dependencies
-import ExternalDependencies
+import Foundation
 import FirebaseAuth
 
-final class TestableFirebaseAuthService: FirebaseAuthServiceInterface {
-    private static let testableFirebaseApp = "TestFirebaseApp"
-    
-    var clientID: String? {
-        FirebaseApp.app()?.options.clientID
-    }
-    
-    var isConfigured: Bool {
-        FirebaseApp.app(name: Self.testableFirebaseApp) != nil
-    }
-    
-    @MainActor
-    func configure() {
-        guard let path = Bundle(for: type(of: self)).path(forResource: "Info", ofType: "plist"),
-              let options = FirebaseOptions(contentsOfFile: path) else {
-            assert(false, "Couldn't load configuration file.")
-            return
-        }
-        
-        FirebaseApp.configure(name: Self.testableFirebaseApp, options: options)
-    }
-    
-    func signIn(_ auth: AuthCredential) async throws -> AuthDataResult {
-        let authApp = FirebaseAuth.Auth.auth()
-        return try await authApp.signIn(with: auth)
-    }
-    
-    func signIn(email: String, password: String) async throws -> AuthDataResult {
-        let authApp = FirebaseAuth.Auth.auth()
-        return try await authApp.signIn(withEmail: email, password: password)
-    }
-    
-    func signUp(email: String, password: String) async throws -> AuthDataResult {
-        let authApp = FirebaseAuth.Auth.auth()
-        return try await authApp.createUser(withEmail: email, password: password)
-    }
-    
-    func signOut() throws {
-        let authApp = FirebaseAuth.Auth.auth()
-        try authApp.signOut()
-    }
+private enum OfflineAuthError: Error {
+    case unavailable
 }
 
-final class SnapshotFirebaseAuthService: FirebaseAuthServiceInterface {
-    private let firebaseApp = "SnapshotFirebaseApp"
-    
-    var clientID: String? {
-        FirebaseApp.app()?.options.clientID
-    }
-    
-    var isConfigured: Bool {
-        FirebaseApp.app(name: firebaseApp) != nil
-    }
-    
-    @MainActor
-    func configure() {
-        guard let path = Bundle(for: type(of: self)).path(forResource: "Info", ofType: "plist"),
-              let options = FirebaseOptions(contentsOfFile: path) else {
-            assert(false, "Couldn't load configuration file.")
-            return
-        }
-        
-        FirebaseApp.configure(name: firebaseApp, options: options)
-    }
-    
-    func signIn(_ auth: AuthCredential) async throws -> AuthDataResult {
-        let authApp = FirebaseAuth.Auth.auth()
-        return try await authApp.signIn(with: auth)
-    }
-    
-    func signIn(email: String, password: String) async throws -> AuthDataResult {
-        let authApp = FirebaseAuth.Auth.auth()
-        return try await authApp.signIn(withEmail: email, password: password)
-    }
-    
-    func signUp(email: String, password: String) async throws -> AuthDataResult {
-        let authApp = FirebaseAuth.Auth.auth()
-        return try await authApp.createUser(withEmail: email, password: password)
-    }
-    
-    func signOut() throws {
-        let authApp = FirebaseAuth.Auth.auth()
-        try authApp.signOut()
-    }
+/// Test and preview authentication never initializes Firebase or opens provider UI.
+private struct OfflineFirebaseAuthService: FirebaseAuthServiceInterface {
+    var clientID: String? { nil }
+    var isConfigured: Bool { true }
+    @MainActor func configure() {}
+    func signIn(_ credential: AuthCredential) async throws -> AuthDataResult { throw OfflineAuthError.unavailable }
+    func signIn(email: String, password: String) async throws -> AuthDataResult { throw OfflineAuthError.unavailable }
+    func signUp(email: String, password: String) async throws -> AuthDataResult { throw OfflineAuthError.unavailable }
+    func signOut() async throws { throw OfflineAuthError.unavailable }
+}
+
+private struct OfflineAppleAuthService: AppleAuthServiceInterface {
+    func login() async throws -> AuthCredential { throw OfflineAuthError.unavailable }
+}
+
+private struct OfflineGoogleAuthService: GoogleAuthServiceInterface {
+    @MainActor func login(_ clientID: String) async throws -> AuthCredential { throw OfflineAuthError.unavailable }
+    @MainActor func logout() async throws { throw OfflineAuthError.unavailable }
 }
 
 extension AuthClient: TestDependencyKey {
     public static let testValue = AuthClient(
-        firebaseAuthService: TestableFirebaseAuthService(),
-        appleAuthService: AppleAuthService(),
-        googleAuthService: GoogleAuthService(),
+        firebaseAuthService: OfflineFirebaseAuthService(),
+        appleAuthService: OfflineAppleAuthService(),
+        googleAuthService: OfflineGoogleAuthService(),
         validator: ValidationService()
     )
-    
-    public static let snapshotValue = AuthClient(
-        firebaseAuthService: SnapshotFirebaseAuthService(),
-        appleAuthService: AppleAuthService(),
-        googleAuthService: GoogleAuthService(),
-        validator: ValidationService()
-    )
+    public static let snapshotValue = testValue
 }

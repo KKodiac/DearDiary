@@ -4,7 +4,7 @@ import DesignSystem
 
 @ViewAction(for: Setup.self)
 struct SetupScreen: View {
-    @Bindable var store: StoreOf<Setup>
+    @Bindable public var store: StoreOf<Setup>
     
     var body: some View {
         VStack {
@@ -13,6 +13,9 @@ struct SetupScreen: View {
             Spacer()
             formSection
             Spacer()
+            if let error = store.errorMessage {
+                Text(error).font(.callout).foregroundStyle(.secondary)
+            }
             getStartedButton
         }
         .padding(.all)

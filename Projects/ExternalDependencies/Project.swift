@@ -33,10 +33,6 @@ let project = Project(
                 .external(
                     name: "GoogleSignIn",
                     condition: .when([.ios, .macos])
-                ),
-                .external(
-                    name: "GoogleSignInSwift",
-                    condition: .when([.ios, .macos])
                 )
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])

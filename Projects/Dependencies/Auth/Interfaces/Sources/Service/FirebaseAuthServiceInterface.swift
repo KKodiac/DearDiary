@@ -4,7 +4,7 @@ public protocol FirebaseAuthServiceInterface {
     var clientID: String? { get }
     var isConfigured: Bool { get }
     
-    @MainActor func configure()
+    @MainActor func configure() throws
     func signIn(email: String, password: String) async throws -> AuthDataResult
     func signIn(_: AuthCredential) async throws -> AuthDataResult
     func signUp(email: String, password: String) async throws -> AuthDataResult

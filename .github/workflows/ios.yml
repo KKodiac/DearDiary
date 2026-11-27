@@ -1,0 +1,99 @@
+name: iOS build and tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ios-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: macos-26
+    timeout-minutes: 60
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Install mise
+        uses: jdx/mise-action@c2a87611a18de5b3828c5652fe268e992400cb5c # v4
+        with:
+          install: false
+
+      - name: Set up pinned Tuist and placeholder configuration
+        run: |
+          xcodebuild -version
+          ./Scripts/setup.sh
+          git diff --exit-code -- Tuist/Package.resolved
+
+      - name: Select an available iPhone simulator
+        run: |
+          simulator_id="$(python3 .github/scripts/select_simulator.py)"
+          printf 'SIMULATOR_DESTINATION=platform=iOS Simulator,id=%s\n' "$simulator_id" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/TestResults"
+
+      - name: Build DearDiary
+        run: |
+          xcodebuild build \
+            -workspace DearDiaryWorkspace.xcworkspace \
+            -scheme DearDiary \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DearDiaryDerivedData" \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run Diary tests
+        run: |
+          xcodebuild test \
+            -workspace DearDiaryWorkspace.xcworkspace \
+            -scheme DiaryTest \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$RUNNER_TEMP/DearDiaryDerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/TestResults/DiaryTest.xcresult" \
+            -parallel-testing-enabled NO \
+            -only-testing:DiaryTest \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run App tests
+        run: |
+          xcodebuild test \
+            -workspace DearDiaryWorkspace.xcworkspace \
+            -scheme DearDiary \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$RUNNER_TEMP/DearDiaryDerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/TestResults/DearDiaryTests.xcresult" \
+            -parallel-testing-enabled NO \
+            -only-testing:DearDiaryTests \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Run Account reducer tests
+        run: |
+          xcodebuild test \
+            -workspace DearDiaryWorkspace.xcworkspace \
+            -scheme AccountTest \
+            -destination "$SIMULATOR_DESTINATION" \
+            -derivedDataPath "$RUNNER_TEMP/DearDiaryDerivedData" \
+            -resultBundlePath "$RUNNER_TEMP/TestResults/AccountTests.xcresult" \
+            -parallel-testing-enabled NO \
+            -only-testing:AccountTest/AccountTests \
+            -only-testing:AccountTest/SetupTests \
+            CODE_SIGNING_ALLOWED=NO
+
+      - name: Upload test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: ios-test-results
+          path: ${{ runner.temp }}/TestResults
+          if-no-files-found: ignore
+          retention-days: 7
