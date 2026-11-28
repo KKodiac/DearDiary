@@ -14,6 +14,7 @@ public struct Setting {
         var isSigningOut = false
         var isSignOutConfirmationPresented = false
         var errorMessage: String?
+        @Presents var legacyRecovery: LegacyRecovery.State?
 
         public init(diaryName: String = "", isSigningOut: Bool = false) {
             draftName = diaryName
@@ -23,6 +24,8 @@ public struct Setting {
 
     public enum Action: BindableAction, Equatable, Sendable {
         case binding(BindingAction<State>)
+        case openLegacyRecovery
+        case legacyRecovery(PresentationAction<LegacyRecovery.Action>)
         case saveName
         case requestSignOut
         case cancelSignOut
@@ -40,6 +43,10 @@ public struct Setting {
         BindingReducer()
         Reduce { state, action in
             switch action {
+            case .openLegacyRecovery:
+                guard !state.uid.isEmpty, !state.isSigningOut else { return .none }
+                state.legacyRecovery = LegacyRecovery.State(ownerID: state.uid)
+                return .none
             case .saveName:
                 let name = state.draftName.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !name.isEmpty else {
@@ -51,14 +58,14 @@ public struct Setting {
                 state.errorMessage = nil
                 return .none
             case .requestSignOut:
-                guard !state.isSigningOut else { return .none }
+                guard !state.isSigningOut, state.legacyRecovery == nil else { return .none }
                 state.isSignOutConfirmationPresented = true
                 return .none
             case .cancelSignOut:
                 state.isSignOutConfirmationPresented = false
                 return .none
             case .confirmSignOut:
-                guard !state.isSigningOut else { return .none }
+                guard !state.isSigningOut, state.legacyRecovery == nil else { return .none }
                 state.isSignOutConfirmationPresented = false
                 state.isSigningOut = true
                 state.errorMessage = nil
@@ -67,9 +74,12 @@ public struct Setting {
                 state.isSigningOut = false
                 state.errorMessage = "You couldn’t be signed out. Please try again."
                 return .none
-            case .binding, .delegate:
+            case .binding, .delegate, .legacyRecovery:
                 return .none
             }
+        }
+        .ifLet(\.$legacyRecovery, action: \.legacyRecovery) {
+            LegacyRecovery()
         }
     }
 }

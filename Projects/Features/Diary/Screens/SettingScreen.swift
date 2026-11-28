@@ -24,6 +24,11 @@ public struct SettingView: View {
                         .accessibilityLabel("Error: \(error)")
                 }
             }
+            if !store.uid.isEmpty {
+                Section {
+                    Button("Recover Older Entries") { store.send(.openLegacyRecovery) }
+                }
+            }
             Section {
                 Button("Sign out", role: .destructive) { store.send(.requestSignOut) }
                 if store.isSigningOut {
@@ -32,6 +37,9 @@ public struct SettingView: View {
             } footer: {
                 Text("Signing out keeps diary entries on this device. They are available when you sign back in to the same account.")
             }
+        }
+        .sheet(item: $store.scope(state: \.legacyRecovery, action: \.legacyRecovery)) { store in
+            LegacyRecoveryScreen(store: store)
         }
         .disabled(store.isSigningOut)
         .navigationBarBackButtonHidden(store.isSigningOut)

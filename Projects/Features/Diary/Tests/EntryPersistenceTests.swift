@@ -64,6 +64,29 @@ struct EntryPersistenceTests {
         let reloaded = try await reopened.entries(from: intervalStart, until: intervalEnd, ownerID: "alice")
         #expect(reloaded == alice)
 
+        let legacy = try await reopened.legacyEntries()
+        let original = try #require(legacy.first)
+        #expect(legacy.map(\.id) == [legacyID])
+        #expect(original.title == "Legacy title")
+        #expect(original.content == "Legacy content")
+        #expect(original.dialogues.map(\.content) == ["Hello"])
+
+        try await reopened.recoverLegacyEntry(id: legacyID, ownerID: "alice")
+        try await reopened.recoverLegacyEntry(id: legacyID, ownerID: "alice")
+        await #expect(throws: EntryStorageError.ownershipMismatch) {
+            try await reopened.recoverLegacyEntry(id: legacyID, ownerID: "bob")
+        }
+
+        let afterRecovery = try PersistenceClient(modelContainer: open()).entry
+        let remaining = try await afterRecovery.legacyEntries()
+        let recovered = try await afterRecovery.search(query: "Legacy content", ownerID: "alice")
+        let otherAccount = try await afterRecovery.search(query: "Legacy content", ownerID: "bob")
+        let recoveredDiary = try await afterRecovery.entries(from: intervalStart, until: intervalEnd, ownerID: "alice")
+        #expect(remaining.isEmpty)
+        #expect(recovered == [original])
+        #expect(otherAccount.isEmpty)
+        #expect(recoveredDiary.contains(original))
+
     }
 }
 

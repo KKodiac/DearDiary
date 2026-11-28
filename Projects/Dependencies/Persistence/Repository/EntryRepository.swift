@@ -3,6 +3,32 @@ import SwiftData
 
 @ModelActor
 final actor EntryModelRepository: EntryRepository {
+    func legacyEntries() throws -> [StoredEntry] {
+        let descriptor = FetchDescriptor(
+            predicate: #Predicate<EntryModel> { $0.ownerID == nil },
+            sortBy: [SortDescriptor(\EntryModel.createdAt, order: .reverse)]
+        )
+        return try modelContext.fetch(descriptor).map(storedEntry)
+    }
+
+    func recoverLegacyEntry(id: UUID, ownerID: String) throws {
+        guard !ownerID.isEmpty else { throw EntryStorageError.missingOwner }
+        try Task.checkCancellation()
+        let descriptor = FetchDescriptor(predicate: #Predicate<EntryModel> { $0.id == id })
+        guard let entry = try modelContext.fetch(descriptor).first else {
+            throw EntryStorageError.ownershipMismatch
+        }
+        if entry.ownerID == ownerID { return }
+        guard entry.ownerID == nil else { throw EntryStorageError.ownershipMismatch }
+        do {
+            entry.ownerID = ownerID
+            try modelContext.save()
+        } catch {
+            modelContext.rollback()
+            throw error
+        }
+    }
+
     func entries(from start: Date, until end: Date, ownerID: String) throws -> [StoredEntry] {
         guard !ownerID.isEmpty else { throw EntryStorageError.missingOwner }
         let predicate = #Predicate<EntryModel> {
