@@ -65,7 +65,22 @@ xcodebuild test \
 
 The generated test schemes are `DiaryTest` and `AccountTest`; substitute `AccountTest` in both scheme and test-target arguments to run Account tests. Feature library schemes such as `Diary` are not configured for the test action. Example app targets do not have separate generated schemes.
 
-Snapshot baselines depend on the simulator's device, OS version, appearance, and locale. Use matching settings when comparing or recording them. `mise exec -- tuist cache` is optional after the first successful build.
+The Account snapshot baselines were recorded on an iPhone 17e simulator running iOS 27.2 with Xcode 27.2 (27B52), light appearance, and English (United States). The suites use five device layout presets per screen. Use the same simulator settings when comparing or recording baselines.
+
+```sh
+xcodebuild test \
+  -workspace DearDiaryWorkspace.xcworkspace \
+  -scheme AccountTest \
+  -destination 'platform=iOS Simulator,name=iPhone 17e,OS=27.2' \
+  -parallel-testing-enabled NO \
+  -testLanguage en -testRegion US \
+  -only-testing:AccountTest/AccountSnapshot \
+  -only-testing:AccountTest/AuthenticationSnapshot \
+  -only-testing:AccountTest/RegistrationSnapshot \
+  CODE_SIGNING_ALLOWED=NO
+```
+
+`mise exec -- tuist cache` is optional after the first successful build.
 
 ## Current verification status
 
@@ -121,4 +136,4 @@ The V2 persistence schema adds an optional account owner identifier to diary ent
 
 The job builds `DearDiary`, runs `DiaryTest` and `DearDiaryTests`, and runs the Account reducer suites through `AccountTest/AccountTests` and `AccountTest/SetupTests`. It selects an available iPhone simulator running iOS 18 or later that matches the active Xcode SDK. Test result bundles are uploaded for seven days, including when tests fail. The workflow contains no service credentials and does not exercise live authentication or on-device model generation.
 
-Existing Account snapshot suites are excluded from CI because their baselines depend on device and OS settings. Refreshing and validating those baselines remains open. Workflow syntax and simulator selection are checked locally; the hosted workflow still needs its first run after publishing these changes.
+Account snapshot suites run locally with the simulator settings above. CI runs the Account reducer tests.
