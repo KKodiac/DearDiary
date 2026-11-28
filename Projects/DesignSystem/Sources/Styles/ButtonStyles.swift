@@ -1,6 +1,9 @@
 import SwiftUI
 
 public struct PrimaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+    @ScaledMetric(relativeTo: .body) private var fontSize: CGFloat = 16
+
     public init() { }
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -8,8 +11,8 @@ public struct PrimaryButtonStyle: ButtonStyle {
             .background(DesignSystemAsset.ddAccent.swiftUIColor)
             .foregroundStyle(.white)
             .clipShape(RoundedRectangle(cornerRadius: 16.0))
-            .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 16))
-            .opacity(configuration.isPressed ? 0.4 : 1.0)
+            .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: fontSize))
+            .opacity(isEnabled && !configuration.isPressed ? 1 : 0.5)
     }
 }
 

@@ -6,21 +6,28 @@ import DesignSystem
 struct SetupScreen: View {
     @Bindable public var store: StoreOf<Setup>
     
+    @FocusState private var isNameFocused: Bool
+
     var body: some View {
-        VStack {
-            Spacer()
-            titleSection
-            Spacer()
-            formSection
-            Spacer()
-            if let error = store.errorMessage {
-                Text(error).font(.callout).foregroundStyle(.secondary)
+        ScrollView {
+            VStack(spacing: 24) {
+                titleSection
+                formSection
+                if let error = store.errorMessage {
+                    Text(error)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                getStartedButton
             }
-            getStartedButton
+            .frame(maxWidth: 440)
+            .frame(maxWidth: .infinity)
+            .primaryHorizontalPadding()
+            .padding(.vertical, 24)
         }
-        .padding(.all)
-        .padding(.horizontal)
-        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
+        .scrollDismissesKeyboard(.interactively)
+        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea())
         .onAppear { send(.didAppear) }
     }
     
@@ -29,9 +36,9 @@ struct SetupScreen: View {
         VStack {
             Text("Dear Diary")
                 .primaryTextStyle()
-                .offset(y: Layout.Offset.title)
             
             DesignSystemAsset.diary.swiftUIImage
+                .accessibilityHidden(true)
         }
     }
     
@@ -45,22 +52,22 @@ struct SetupScreen: View {
     private var diaryNameSection: some View {
         VStack(alignment: .leading) {
             Text("Name your diary...")
-                .font(
-                    DesignSystemFontFamily.Pretendard.regular
-                        .swiftUIFont(size: 14)
-                )
+                .font(.subheadline)
             
-            TextField(text: $store.name) {
+            TextField(text: Binding(store.$name)) {
                 Text("ex) Kitty")
             }
             .textFieldStyle(PrimaryTextFieldStyle())
+            .focused($isNameFocused)
+            .submitLabel(.done)
+            .onSubmit { isNameFocused = false }
         }
     }
     
     private var personalitySection: some View {
         VStack(alignment: .leading) {
             Text("Select the personality of your diary...")
-                .font(DesignSystemFontFamily.Pretendard.regular.swiftUIFont(size: 14))
+                .font(.subheadline)
                 .padding(.top, Layout.Padding.top)
             
             personalityPicker
@@ -99,6 +106,7 @@ struct SetupScreen: View {
     
     private var getStartedButton: some View {
         PrimaryButton(label: "Get Started") {
+            isNameFocused = false
             send(.didTapGetStarted)
         }
     }

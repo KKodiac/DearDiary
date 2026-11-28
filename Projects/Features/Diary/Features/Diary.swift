@@ -1,5 +1,4 @@
 import ComposableArchitecture
-@preconcurrency import SwiftUICalendar
 import Foundation
 import SwiftData
 import Persistence
@@ -13,7 +12,8 @@ public struct Diary {
     public struct State: Equatable, Sendable {
         @Shared(.appStorage("client_uid")) var uid = ""
         @Shared(.appStorage("diary_name")) var diaryName = ""
-        var focusDate: YearMonthDay
+        let calendar: Calendar
+        var focusDate: Date
         var focusedEntries: [Entry]
         
         var isSigningOut = false
@@ -28,9 +28,11 @@ public struct Diary {
         @Presents var destination: Destination.State?
         
         public init(
-            focusDate: YearMonthDay = YearMonthDay.current,
-            focusedEntries: [Entry] = []
+            focusDate: Date = .now,
+            focusedEntries: [Entry] = [],
+            calendar: Calendar = .autoupdatingCurrent
         ) {
+            self.calendar = calendar
             self.focusDate = focusDate
             self.focusedEntries = focusedEntries
         }
@@ -56,7 +58,7 @@ public struct Diary {
             case didTapSearch
             
             case didTapEntryCard(Entry)
-            case didTapCalendarDate(YearMonthDay)
+            case didTapCalendarDate(Date)
             case didTapMemoirButton
             
             case didTapNavigateToSetting
@@ -169,8 +171,7 @@ public struct Diary {
         state.loadError = nil
         state.hasLoaded = false
         guard !state.uid.isEmpty,
-              let date = state.focusDate.date,
-              let interval = Calendar.current.dateInterval(of: .day, for: date) else {
+              let interval = state.calendar.dateInterval(of: .day, for: state.focusDate) else {
             state.isLoading = false
             state.loadError = "Sign in again to load your diary entries."
             return .cancel(id: CancelID.load)

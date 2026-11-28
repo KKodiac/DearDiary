@@ -1,62 +1,64 @@
 import AuthenticationServices
-import Combine
 
-extension AppleAuthService: AppleAuthServiceInterface {
-    public func login() async throws -> AuthCredential {
-        try await withCheckedThrowingContinuation { continuation in
+final class AppleAuthService: NSObject, AppleAuthServiceInterface {
+    @MainActor private var controller: ASAuthorizationController?
+    @MainActor private var continuation: CheckedContinuation<AuthCredential, Error>?
+
+    @MainActor
+    func login() async throws -> AuthCredential {
+        guard controller == nil else { throw AppleAuthError.notInteractive }
+
+        return try await withCheckedThrowingContinuation { continuation in
             let request = ASAuthorizationAppleIDProvider().createRequest()
             request.requestedScopes = [.fullName, .email]
-            
+
             let controller = ASAuthorizationController(authorizationRequests: [request])
             controller.delegate = self
             controller.presentationContextProvider = self
+            self.continuation = continuation
+            self.controller = controller
             controller.performRequests()
-            serviceSubject.sink(receiveCompletion: { completion in
-                switch completion {
-                case .finished:
-                    return
-                case let .failure(error):
-                    continuation.resume(throwing: error)
-                }
-            }, receiveValue: { value in
-                continuation.resume(returning: value)
-            })
-            .cancel()
         }
+    }
+
+    @MainActor
+    private func finish(
+        _ result: Result<AuthCredential, Error>,
+        from controller: ASAuthorizationController
+    ) {
+        guard self.controller === controller, let continuation else { return }
+        self.continuation = nil
+        self.controller = nil
+        continuation.resume(with: result)
     }
 }
 
 extension AppleAuthService: ASAuthorizationControllerDelegate {
-    public func authorizationController(controller: ASAuthorizationController, didCompleteWithAuthorization authorization: ASAuthorization) {
-        guard let appleIDCredential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-            serviceSubject.send(completion: .failure(.unknown))
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithAuthorization authorization: ASAuthorization
+    ) {
+        guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+            finish(.failure(AppleAuthError.invalidResponse), from: controller)
             return
         }
-        
-        guard let identityTokenData = appleIDCredential.identityToken else {
-            serviceSubject.send(completion: .failure(.tokenMissing))
+        guard let token = credential.identityToken else {
+            finish(.failure(AppleAuthError.tokenMissing), from: controller)
             return
         }
-        
-        let identityToken =  String(
-            decoding: identityTokenData,
-            as: UTF8.self
+        let firebaseCredential = OAuthProvider.appleCredential(
+            withIDToken: String(decoding: token, as: UTF8.self),
+            rawNonce: nil,
+            fullName: credential.fullName
         )
-        
-        let provider = OAuthProvider
-            .appleCredential(
-                withIDToken: identityToken,
-                rawNonce: nil,
-                fullName: appleIDCredential.fullName
-            )
-        
-        self.serviceSubject.send(provider)
+        finish(.success(firebaseCredential), from: controller)
     }
-    
-    public func authorizationController(controller: ASAuthorizationController, didCompleteWithError error: Error) {
-        serviceSubject.send(
-            completion: .failure(.init(error: error))
-        )
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithError error: Error
+    ) {
+        finish(.failure(AppleAuthError(error: error)), from: controller)
     }
 }
 

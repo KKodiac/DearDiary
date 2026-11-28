@@ -4,50 +4,51 @@ import DesignSystem
 
 public struct ChatScreen: View {
     @Bindable var store: StoreOf<Memoir>
-    @AppStorage("DiaryName") private var diaryName: String?
+    @FocusState private var isComposerFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
     
     public var body: some View {
-        VStack {
+        VStack(spacing: 8) {
+            chatHistory
             if let error = store.errorMessage, !store.composing {
-                HStack {
-                    Text(error).font(.footnote).foregroundStyle(.red)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(error)
+                        .font(.callout)
+                        .foregroundStyle(.red)
                     Button("Retry") { store.send(.didTapRetry) }
                         .disabled(store.isWorking || store.failedMessage == nil)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.vertical, 6)
             }
             if store.isWorking && !store.composing {
-                ProgressView("Waiting for your diary…").font(.footnote)
+                ProgressView("Waiting for your diary…")
+                    .font(.callout)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            chatHistory
             chatInput
         }
-    }
-    
-    // MARK: - Chat History
-    private var chatHistory: some View {
-        ScrollView {
-            ScrollViewReader { proxy in
-                ForEach(store.dialogues, id: \.id) { dialogue in
-                    chatBubble(for: dialogue)
-                        .id(dialogue.id)
-                }
-                .onChange(of: store.dialogues) { _, newValue in
-                    withAnimation {
-                        proxy.scrollTo(newValue.last?.id, anchor: .bottom)
-                    }
-                }
-            }
+        .onChange(of: store.composing) { _, composing in
+            if composing { isComposerFocused = false }
         }
     }
-    
+
+    private var chatHistory: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(store.dialogues, id: \.id) { dialogue in
+                    chatBubble(for: dialogue)
+                }
+            }
+            .padding(.vertical, 8)
+        }
+        .defaultScrollAnchor(.bottom)
+        .scrollDismissesKeyboard(.interactively)
+    }
+
     // MARK: - Chat Input
     private var chatInput: some View {
-        HStack(alignment: .bottom) {
+        HStack(alignment: .bottom, spacing: 8) {
             textField
-            Spacer()
             sendButton
         }
         .sheet(
@@ -74,12 +75,13 @@ public struct ChatScreen: View {
             prompt: Text("What happened today?"),
             axis: .vertical
         ) {
-            Text("Hello World")
+            Text("Message")
         }
         .textFieldStyle(
             ChatTextFieldStyle(colorScheme: colorScheme)
         )
-        .onSubmit { store.send(.didTapSendButton) }
+        .lineLimit(1...4)
+        .focused($isComposerFocused)
         .disabled(store.isWorking)
     }
     
@@ -89,6 +91,8 @@ public struct ChatScreen: View {
         } label: {
             DesignSystemAsset.send.swiftUIImage
                 .padding(10)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
                 .background(DesignSystemAsset.ddBackgroundAccent.swiftUIColor)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay {
@@ -100,6 +104,7 @@ public struct ChatScreen: View {
                         )
                 }
         }
+        .accessibilityLabel("Send message")
         .disabled(store.isWorking || store.dialogue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
     
@@ -118,7 +123,6 @@ public struct ChatScreen: View {
                 Spacer()
             }
         }
-        .padding(.vertical, 10)
     }
     
     private var assistantProfile: some View {
@@ -136,7 +140,8 @@ public struct ChatScreen: View {
     private func bubbleContent(for content: Dialogue) -> some View {
         VStack(alignment: .leading) {
             if content.role == .assistant {
-                Text("\(store.diaryName)")
+                Text(store.diaryName)
+                    .font(.subheadline.weight(.semibold))
             }
             
             VStack(alignment: .trailing) {
@@ -150,8 +155,7 @@ public struct ChatScreen: View {
     private func messageContent(for content: Dialogue) -> some View {
         VStack {
             Text(content.content)
-                .font(.subheadline)
-                .fontWeight(.light)
+                .font(.body)
                 .padding(.horizontal, 15)
                 .padding(.vertical, 12)
                 .foregroundStyle(

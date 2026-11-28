@@ -5,7 +5,6 @@ import SwiftUI
 @ViewAction(for: Account.self)
 public struct AccountView: View {
     @Bindable public var store: StoreOf<Account>
-    @Environment(\.authorizationController) private var controller
     
     public init(store: StoreOf<Account>) {
         self.store = store
@@ -17,10 +16,12 @@ public struct AccountView: View {
             CircularButton(image: DesignSystemAsset.google) {
                 send(.didTapSignInWithGoogle)
             }
+            .accessibilityLabel("Sign in with Google")
             
             CircularButton(image: DesignSystemAsset.apple) {
                 send(.didTapSignInWithApple)
             }
+            .accessibilityLabel("Sign in with Apple")
         }
     }
     
@@ -32,7 +33,6 @@ public struct AccountView: View {
             PrimaryButton(label: "Sign Up with Email") {
                 send(.didTapSignUpWithEmail)
             }
-            .padding(.vertical)
         }
     }
     
@@ -47,14 +47,11 @@ public struct AccountView: View {
                 send(.didTapSignInWithEmail)
             } label: {
                 Text("Log In")
-                    .font(
-                        DesignSystemFontFamily.Pretendard.bold
-                            .swiftUIFont(size: 16)
-                    )
+                    .font(.subheadline.weight(.semibold))
+                    .frame(minHeight: 44)
                     .foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
             }
         }
-        .padding(.bottom, 30)
     }
     
     public var body: some View {
@@ -72,21 +69,34 @@ public struct AccountView: View {
         NavigationStack {
             ZStack {
                 DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea()
-                Text("Dear Diary").primaryTextStyle().offset(y: -50)
-                VStack {
-                    Spacer()
-                    if store.error != nil {
-                        Text("Sign-in is unavailable. Please try again later.")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.bottom)
+                ScrollView {
+                    VStack(spacing: 20) {
+                        Text("Dear Diary")
+                            .primaryTextStyle()
+                            .padding(.bottom, 24)
+                        if store.isSubmitting {
+                            ProgressView("Signing in…")
+                                .font(.callout)
+                        } else if let message = store.error?.userMessage {
+                            Text(message)
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+
+                        Group {
+                            socialSection
+                            emailSection
+                            confirmSection
+                        }
+                        .disabled(store.isSubmitting)
                     }
-                    socialSection
-                    emailSection
-                    confirmSection
+                    .frame(maxWidth: 440)
+                    .frame(maxWidth: .infinity)
+                    .primaryHorizontalPadding()
+                    .padding(.vertical, 32)
                 }
-                .primaryHorizontalPadding()
+                .defaultScrollAnchor(.center, for: .alignment)
             }
             .onOpenURL { url in
                 send(.didReceiveOpenURL(url))

@@ -1,14 +1,12 @@
 import ComposableArchitecture
 import DesignSystem
-import SwiftUICalendar
 import SwiftUI
 
 @ViewAction(for: Diary.self)
 public struct DiaryView: View {
     @Bindable public var store: StoreOf<Diary>
-    @StateObject private var controller = CalendarController()
-    @Environment(\.colorScheme) private var colorScheme
-    
+
+
     public init(store: StoreOf<Diary>) {
         self.store = store
     }
@@ -37,17 +35,14 @@ public struct DiaryView: View {
     
     // MARK: - Main Content
     private var mainContent: some View {
-        GeometryReader { proxy in
-            VStack(spacing: 20) {
-                headerView
-                if let error = store.sessionError {
-                    sessionErrorBanner(error)
-                }
-                calendarView
-                listView
+        VStack(spacing: 12) {
+            headerView
+            if let error = store.sessionError {
+                sessionErrorBanner(error)
             }
+            calendarView
+            listView
         }
-        .ignoresSafeArea(.all, edges: .bottom)
     }
 
     private func sessionErrorBanner(_ message: String) -> some View {
@@ -84,7 +79,8 @@ public struct DiaryView: View {
             .accessibilityLabel("Search diary")
             settingsButton
         }
-        .padding(20)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 8)
         .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
         .navigationDestination(
             item: $store.scope(
@@ -98,96 +94,28 @@ public struct DiaryView: View {
     
     // MARK: - Calendar
     private var calendarView: some View {
-        VStack {
-            calendarHeader
-            calendarGrid
-        }
+        DatePicker(
+            "Diary date",
+            selection: Binding(
+                get: { store.focusDate },
+                set: { send(.didTapCalendarDate($0)) }
+            ),
+            displayedComponents: .date
+        )
+        .datePickerStyle(.graphical)
+        .environment(\.calendar, store.calendar)
+        .environment(\.timeZone, store.calendar.timeZone)
+        .labelsHidden()
+        .padding(.horizontal)
         .onAppear { send(.didAppear) }
     }
-    
-    private var calendarHeader: some View {
-        HStack(alignment: .center, spacing: 0) {
-            previousButton
-            monthYearLabel
-            nextButton
-        }
-    }
-    
-    private var previousButton: some View {
-        calendarNavigationButton(direction: .previous)
-    }
-    
-    private var nextButton: some View {
-        calendarNavigationButton(direction: .next)
-    }
-    
-    private func calendarNavigationButton(direction: NavigationDirection) -> some View {
-        Button {
-            let value = direction == .previous ? -1 : 1
-            controller.scrollTo(controller.yearMonth.addMonth(value: value), isAnimate: true)
-        } label: {
-            (direction == .previous ? DesignSystemAsset.arrowleft : DesignSystemAsset.arrowright)
-                .swiftUIImage
-        }
-        .padding(25)
-    }
-    
-    private var monthYearLabel: some View {
-        Text("\(String(controller.yearMonth.year)).\(controller.yearMonth.month)")
-            .font(.system(size: 20))
-            .bold()
-            .padding(.vertical)
-    }
-    
-    private var calendarGrid: some View {
-        CalendarView(
-            controller,
-            header: { weekHeader($0) },
-            component: { dateCell($0) }
-        )
-        .padding([.horizontal, .bottom], 30)
-    }
-    
-    private func weekHeader(_ week: Week) -> some View {
-        GeometryReader { proxy in
-            Text("\(week.shortString.first?.uppercased() ?? "")")
-                .font(.subheadline)
-                .bold()
-                .frame(width: proxy.size.width,
-                       height: proxy.size.height,
-                       alignment: .center)
-        }
-    }
-    
-    @ViewBuilder
-    private func dateCell(_ date: YearMonthDay) -> some View {
-        GeometryReader { proxy in
-            Text("\(date.day)")
-                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
-                .font(.caption)
-                .fontWeight(store.focusDate == date ? .bold : .light)
-                .background(
-                    DesignSystemAsset.ddAccent.swiftUIColor
-                        .clipShape(Circle())
-                        .opacity(store.focusDate == date ? 1 : 0)
-                )
-                .foregroundStyle(
-                    store.focusDate == date 
-                    ? Color.white 
-                    : colorScheme == .dark ? .primary : Color.black
-                )
-                .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
-                .onTapGesture {
-                    send(.didTapCalendarDate(date))
-                }
-        }
-    }
-    
+
     // MARK: - List
     private var listView: some View {
         VStack {
             dateHeader
             entriesList
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .padding(.top)
         .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
@@ -204,20 +132,21 @@ public struct DiaryView: View {
     }
     
     private var dateHeader: some View {
-        Divider()
-            .overlay {
-                HStack {
-                    Text("\(store.focusDate.date?.formatted(date: .abbreviated, time: .omitted) ?? "")")
-                        .foregroundStyle(Color.gray)
-                        .padding(.trailing)
-                        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
-                    Spacer()
-                }
-            }
-            .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
-            .padding()
+        HStack(spacing: 12) {
+            Text(store.focusDate, format: .dateTime.year().month(.abbreviated).day())
+                .font(.headline)
+                .environment(\.calendar, store.calendar)
+                .environment(\.timeZone, store.calendar.timeZone)
+                .foregroundStyle(.secondary)
+                .accessibilityAddTraits(.isHeader)
+            Rectangle()
+                .fill(.quaternary)
+                .frame(height: 1)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
     }
-    
+
     @ViewBuilder
     private var entriesList: some View {
         if store.isLoading {
@@ -237,11 +166,12 @@ public struct DiaryView: View {
             )
         } else {
             ScrollView {
-                LazyVStack {
+                LazyVStack(spacing: 12) {
                     ForEach(store.focusedEntries, id: \.self) { entry in
                         entryCard(for: entry)
                     }
                 }
+                .padding(.bottom, 76)
             }
         }
     }
@@ -252,7 +182,7 @@ public struct DiaryView: View {
         } label: {
             Card(title: entry.title, content: entry.content, timestamp: entry.createdAt)
         }
-        .tint(.black)
+        .buttonStyle(.plain)
     }
     
     // MARK: - Supporting Views
@@ -264,6 +194,7 @@ public struct DiaryView: View {
                 FloatingButton(image: DesignSystemAsset.imoji) {
                     send(.didTapMemoirButton)
                 }
+                .accessibilityLabel("Open diary conversation")
             }
         }
         .padding()
@@ -281,9 +212,4 @@ public struct DiaryView: View {
         }
         .accessibilityLabel("Settings")
     }
-}
-
-// MARK: - Supporting Types
-private enum NavigationDirection {
-    case previous, next
 }

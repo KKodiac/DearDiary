@@ -1,7 +1,6 @@
 import ComposableArchitecture
 import Foundation
 import Persistence
-import SwiftUICalendar
 import Testing
 @testable import Diary
 
@@ -11,7 +10,7 @@ struct DiaryLoadingTests {
     func loadsSelectedDayForCurrentAccount() async {
         var state = Diary.State()
         state.$uid = Shared(value: "alice")
-        let date = state.focusDate.date ?? .now
+        let date = state.focusDate
         let record = StoredEntry(id: UUID(), title: "A day", content: "Content", createdAt: date)
         let expected = Entry(id: record.id, title: record.title, content: record.content, createdAt: date)
         let store = TestStore(initialState: state) { Diary() } withDependencies: {
@@ -29,6 +28,35 @@ struct DiaryLoadingTests {
             $0.isLoading = false
             $0.hasLoaded = true
             $0.focusedEntries = [expected]
+        }
+    }
+
+    @Test
+    func loadsBuddhistCalendarDayAcrossGregorianMonthBoundary() async throws {
+        var calendar = Calendar(identifier: .buddhist)
+        calendar.timeZone = try #require(TimeZone(identifier: "Asia/Seoul"))
+        let january = try #require(calendar.date(from: DateComponents(year: 2569, month: 1, day: 31)))
+        let february = try #require(calendar.date(from: DateComponents(year: 2569, month: 2, day: 1)))
+        let selected = february.addingTimeInterval(3600)
+        let utcFebruary = try Date("2026-02-01T00:00:00Z", strategy: .iso8601)
+
+        var state = Diary.State(focusDate: january, calendar: calendar)
+        state.$uid = Shared(value: "alice")
+        let store = TestStore(initialState: state) { Diary() } withDependencies: {
+            $0.entryStore.load = { start, end, _ in
+                #expect(start == utcFebruary.addingTimeInterval(-9 * 3600))
+                #expect(end == utcFebruary.addingTimeInterval(15 * 3600))
+                return []
+            }
+        }
+        await store.send(.view(.didTapCalendarDate(selected))) {
+            $0.focusDate = selected
+            $0.isLoading = true
+            $0.loadGeneration = 1
+        }
+        await store.receive(.internal(.didLoadEntries(generation: 1, entries: []))) {
+            $0.isLoading = false
+            $0.hasLoaded = true
         }
     }
 

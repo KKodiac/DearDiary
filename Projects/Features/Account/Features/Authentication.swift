@@ -11,6 +11,7 @@ public struct Authentication {
     
     @ObservableState
     public struct State: Sendable, Equatable {
+        var isSubmitting = false
         var signIn: SignIn.State
         
         @Presents var alert: AlertState<Action.Alert>?
@@ -81,16 +82,22 @@ public struct Authentication {
             NestedAction(\.view) { state, action in
                 switch action {
                 case .didTapSignInWithApple:
+                    guard !state.isSubmitting else { return .none }
+                    state.isSubmitting = true
                     return SignIn()
                         .signInWithApple(state: &state.signIn)
                         .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithGoogle:
+                    guard !state.isSubmitting else { return .none }
+                    state.isSubmitting = true
                     return SignIn()
                         .signInWithGoogle(state: &state.signIn)
                         .map { Action.internal(.signIn($0)) }
                     
                 case .didTapSignInWithEmail:
+                    guard !state.isSubmitting else { return .none }
+                    state.isSubmitting = true
                     return SignIn()
                         .signInWithEmail(
                             state: &state.signIn,
@@ -100,11 +107,13 @@ public struct Authentication {
                         .map { Action.internal(.signIn($0)) }
                     
                 case .didTapNavigateToBack:
+                    guard !state.isSubmitting else { return .none }
                     return .run { send in
                         await dismiss()
                     }
                     
                 case .didTapNavigateToSignUp:
+                    guard !state.isSubmitting else { return .none }
                     return .send(.delegate(.navigateToSignUp))
                     
                 case .binding:
@@ -115,18 +124,22 @@ public struct Authentication {
             NestedAction(\.internal) { state, action in
                 switch action {
                 case .signIn(.delegate(.navigateToSetup)):
+                    state.isSubmitting = false
                     return .send(.delegate(.navigateToSetUp))
                 case .signIn(.delegate(.navigateToDiary)):
+                    state.isSubmitting = false
                     return .send(.delegate(.navigateToDiary))
                 case .signIn(.delegate(.didThrowError(let error))):
+                    state.isSubmitting = false
+                    guard let message = error.userMessage else { return .none }
                     state.alert = AlertState {
-                        TextState("Sign In Error")
+                        TextState("Couldn’t sign in")
                     } actions: {
                         ButtonState(role: .cancel) {
-                            TextState("Ok")
+                            TextState("OK")
                         }
                     } message: {
-                        TextState("Sign In Attempt Failed: \(error.localizedDescription)")
+                        TextState(message)
                     }
                     return .none
                 }
