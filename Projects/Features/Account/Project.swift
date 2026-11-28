@@ -50,6 +50,7 @@ let project = Project(
             deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: [.glob(.relativeToCurrentFile("Example/*"))],
+            resources: [.glob(pattern: .relativeToRoot("Projects/App/Resources/Localizable.xcstrings"))],
             dependencies: [
                 .target(name: "Account"),
                 .external(name: "ComposableArchitecture")

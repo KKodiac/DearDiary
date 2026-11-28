@@ -23,10 +23,6 @@ let package = Package(
             exact: Version(stringLiteral: "1.12.0")
         ),
         .package(
-            url: "https://github.com/GGJJack/SwiftUICalendar",
-            exact: Version(stringLiteral: "0.1.13")
-        ),
-        .package(
             url: "https://github.com/firebase/firebase-ios-sdk",
             exact: Version(stringLiteral: "10.20.0")
         ),

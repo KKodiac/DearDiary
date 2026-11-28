@@ -21,7 +21,6 @@ let project = Project(
                 .project(target: "Assistant", path: .relativeToRoot("Projects/Dependencies")),
                 .project(target: "Persistence", path: .relativeToRoot("Projects/Dependencies")),
                 .external(name: "ComposableArchitecture"),
-                .external(name: "SwiftUICalendar"),
                 .project(
                     target: "Utility",
                     path: .relativeToRoot("Projects/Utility")
@@ -44,7 +43,6 @@ let project = Project(
                 .project(target: "Assistant", path: .relativeToRoot("Projects/Dependencies")),
                 .project(target: "Persistence", path: .relativeToRoot("Projects/Dependencies")),
                 .external(name: "ComposableArchitecture"),
-                .external(name: "SwiftUICalendar"),
                 .external(name: "SnapshotTesting")
             ],
             settings: .settings(configurations: [.defaultDebug, .defaultRelease])
@@ -57,6 +55,7 @@ let project = Project(
             deploymentTargets: Project.Environment.deploymentTarget,
             infoPlist: .extendingDefault(with: Project.Secrets.appInfoPList),
             sources: [.glob(.relativeToCurrentFile("Example/*"))],
+            resources: [.glob(pattern: .relativeToRoot("Projects/App/Resources/Localizable.xcstrings"))],
             dependencies: [
                 .target(name: "Diary"),
                 .external(name: "ComposableArchitecture")

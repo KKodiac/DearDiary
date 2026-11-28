@@ -43,7 +43,7 @@ public struct Setting {
             case .saveName:
                 let name = state.draftName.trimmingCharacters(in: .whitespacesAndNewlines)
                 guard !name.isEmpty else {
-                    state.errorMessage = "Give your diary a name before saving."
+                    state.errorMessage = String(localized: "Give your diary a name before saving.")
                     return .none
                 }
                 state.$diaryName.withLock { $0 = name }
@@ -65,7 +65,7 @@ public struct Setting {
                 return .send(.delegate(.signOutRequested))
             case .signOutFailed:
                 state.isSigningOut = false
-                state.errorMessage = "You couldn’t be signed out. Please try again."
+                state.errorMessage = String(localized: "You couldn’t be signed out. Please try again.")
                 return .none
             case .binding, .delegate:
                 return .none

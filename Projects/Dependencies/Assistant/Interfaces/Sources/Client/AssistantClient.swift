@@ -47,7 +47,7 @@ private enum FoundationModelsUnavailableError: LocalizedError {
     case unsupportedOS
 
     var errorDescription: String? {
-        "On-device writing requires iOS 26 or later and a device that supports Apple Intelligence."
+        String(localized: "On-device writing requires iOS 26 or later and a device that supports Apple Intelligence.")
     }
 }
 
