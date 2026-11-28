@@ -1,9 +1,11 @@
 import SwiftUI
 
 public struct PrimaryTextStyle: ViewModifier {
+    @ScaledMetric(relativeTo: .title) private var fontSize: CGFloat = 26
+
     public func body(content: Content) -> some View {
         content
-            .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 26))
+            .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: fontSize))
     }
 }
 

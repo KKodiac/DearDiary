@@ -6,6 +6,7 @@ import ComposableArchitecture
 import DesignSystem
 
 public struct ResultScreen: View {
+    @FocusState private var isEditorFocused: Bool
     @Environment(\.colorScheme) private var colorScheme
     @Bindable var store: StoreOf<Result>
     
@@ -14,7 +15,6 @@ public struct ResultScreen: View {
             ZStack {
                 if store.entry != nil {
                     mainContent
-                    editButton
                 } else {
                     ContentUnavailableView(
                         "Diary entry unavailable",
@@ -56,39 +56,34 @@ public struct ResultScreen: View {
     
     private var titleText: some View {
         Text(store.title)
-            .font(
-                DesignSystemFontFamily.Pretendard.bold
-                    .swiftUIFont(size: 23)
-            )
+            .font(.title2.bold())
     }
     
     private var contentEditor: some View {
         TextEditor(text: $store.content)
+            .font(.body)
+            .focused($isEditorFocused)
+            .onChange(of: store.editable) { _, editable in
+                isEditorFocused = editable
+            }
+            .scrollDismissesKeyboard(.interactively)
             .multilineTextAlignment(.leading)
             .disabled(!store.editable || store.isSaving)
     }
     
-    // MARK: - Edit Button
     private var editButton: some View {
-        VStack(alignment: .trailing) {
-            Spacer()
-            HStack {
-                Spacer()
-                Button {
-                    store.send(.didTapEditButton)
-                } label: {
-                    Image(systemName: store.editable ? "checkmark" : "pencil")
-                        .bold()
-                        .foregroundColor(.white)
-                        .padding()
-                }
-                .background(DesignSystemAsset.ddAccent.swiftUIColor)
-                .clipShape(Circle())
-            }
+        Button {
+            store.send(.didTapEditButton)
+        } label: {
+            Label(
+                store.editable ? "Done editing" : "Edit entry",
+                systemImage: store.editable ? "checkmark" : "pencil"
+            )
+            .labelStyle(.iconOnly)
         }
-        .padding(.trailing, 10)
+        .disabled(store.isSaving)
     }
-    
+
     // MARK: - Toolbar Content
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
@@ -100,7 +95,8 @@ public struct ResultScreen: View {
             dateTitle
         }
         
-        ToolbarItem(placement: .topBarTrailing) {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            if store.entry != nil { editButton }
             saveButton
         }
     }
@@ -109,23 +105,31 @@ public struct ResultScreen: View {
         Button {
             store.send(.didTapBackButton)
         } label: {
-            DesignSystemAsset.back.swiftUIImage
-                .foregroundStyle(.black)
+            Label("Back", systemImage: "chevron.backward")
+                .labelStyle(.iconOnly)
         }
     }
     
+    @ViewBuilder
     private var dateTitle: some View {
-        Text(
-            "\(String(Calendar.current.component(.year, from: Date.now))).\(Calendar.current.component(.month, from: Date.now))"
-        ).bold()
+        if let entry = store.entry {
+            Text(entry.createdAt, format: .dateTime.month(.abbreviated).year())
+                .bold()
+        }
     }
-    
+
     private var saveButton: some View {
         Button {
+            isEditorFocused = false
             store.send(.didTapSaveButton)
         } label: {
-            Text(store.isSaving ? "Saving…" : "Save")
-                .padding(.horizontal, 10)
+            HStack(spacing: 6) {
+                if store.isSaving {
+                    ProgressView().tint(.white)
+                }
+                Text(store.isSaving ? "Saving…" : "Save")
+            }
+            .padding(.horizontal, 8)
         }
         .buttonStyle(ToolbarPrimaryButtonStyle())
         .disabled(store.entry == nil || store.isSaving)

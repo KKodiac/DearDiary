@@ -17,7 +17,7 @@ struct AccountTests {
     }
 
     @MainActor
-    @Test func socialSignInShowsFriendlyConfigurationError() async {
+    @Test func signInFailureClearsProgressAndAllowsEmailNavigation() async {
         let store = TestStore(initialState: Account.State()) {
             Account()
         } withDependencies: {
@@ -25,34 +25,62 @@ struct AccountTests {
         }
         let error = SignIn.FeatureError.authClientError(.firebaseAuthError(.clientIDIsNil))
 
-        await store.send(.view(.didTapSignInWithGoogle))
+        await store.send(.view(.didTapSignInWithGoogle)) {
+            $0.isSubmitting = true
+        }
         await store.receive(.internal(.signIn(.delegate(.didThrowError(error))))) {
-            $0.error = .signInThrewError(error)
+            $0.isSubmitting = false
+            $0.error = Account.FeatureError(error: error)
         }
         #expect(store.state.error?.userMessage == "Account services are unavailable right now. Please try again later.")
+        await store.send(.view(.didTapSignInWithEmail)) {
+            $0.destination = .authentication(Authentication.State(clientUID: $0.$clientUID))
+        }
     }
 
     @MainActor
-    @Test func socialSignInCancellationDoesNotShowAnError() async {
-        let store = TestStore(initialState: Account.State()) { Account() }
-        let googleCancellation = SignIn.FeatureError.authClientError(
+    @Test func googleCancellationClearsProgressWithoutShowingAnError() async {
+        var state = Account.State()
+        state.isSubmitting = true
+        let store = TestStore(initialState: state) { Account() }
+        let cancellation = SignIn.FeatureError.authClientError(
             .googleAuthError(.otherError(NSError(domain: "com.google.GIDSignIn", code: -5)))
         )
-        let appleCancellation = SignIn.FeatureError.authClientError(.appleAuthError(.canceled))
 
-        await store.send(.internal(.signIn(.delegate(.didThrowError(googleCancellation)))))
-        await store.send(.internal(.signIn(.delegate(.didThrowError(appleCancellation)))))
+        await store.send(.view(.didTapSignInWithGoogle))
+        await store.send(.view(.didTapSignInWithApple))
+        await store.send(.view(.didTapSignInWithEmail))
+        await store.send(.internal(.signIn(.delegate(.didThrowError(cancellation))))) {
+            $0.isSubmitting = false
+        }
+        await store.send(.view(.didTapSignInWithEmail)) {
+            $0.destination = .authentication(Authentication.State(clientUID: $0.$clientUID))
+        }
+    }
+
+    @MainActor
+    @Test func appleCancellationClearsProgressWithoutShowingAnError() async {
+        var state = Account.State()
+        state.isSubmitting = true
+        let store = TestStore(initialState: state) { Account() }
+        let cancellation = SignIn.FeatureError.authClientError(.appleAuthError(.canceled))
+
+        await store.send(.internal(.signIn(.delegate(.didThrowError(cancellation))))) {
+            $0.isSubmitting = false
+        }
     }
 
     @MainActor
     @Test func emailSignInShowsProviderRecoveryMessage() async {
-        let state = Authentication.State(clientUID: Shared(value: ""))
+        var state = Authentication.State(clientUID: Shared(value: ""))
+        state.isSubmitting = true
         let store = TestStore(initialState: state) { Authentication() }
         let error = SignIn.FeatureError.authClientError(
             .firebaseAuthError(.otherError(NSError(domain: "FIRAuthErrorDomain", code: 17020)))
         )
 
         await store.send(.internal(.signIn(.delegate(.didThrowError(error))))) {
+            $0.isSubmitting = false
             $0.alert = AlertState {
                 TextState("Couldn’t sign in")
             } actions: {
@@ -65,7 +93,8 @@ struct AccountTests {
 
     @MainActor
     @Test func registrationShowsWeakPasswordMessage() async {
-        let state = Registration.State()
+        var state = Registration.State()
+        state.isSubmitting = true
         let store = TestStore(initialState: state) { Registration() }
 
         await store.send(.internal(.signUp(.delegate(.didThrowError(
@@ -73,6 +102,7 @@ struct AccountTests {
                 NSError(domain: "FIRAuthErrorDomain", code: 17026)
             )))
         ))))) {
+            $0.isSubmitting = false
             $0.alert = AlertState {
                 TextState("Couldn’t create your account")
             } actions: {

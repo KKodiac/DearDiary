@@ -11,6 +11,7 @@ public struct Registration: Sendable {
     )
     @ObservableState
     public struct State: Sendable, Equatable {
+        var isSubmitting = false
         var signUp: SignUp.State
         @Presents var alert: AlertState<Action.Alert>?
         
@@ -79,6 +80,8 @@ public struct Registration: Sendable {
             NestedAction(\.view) { state, action in
                 switch action {
                 case .didTapSignUpWithEmail:
+                    guard !state.isSubmitting else { return .none }
+                    state.isSubmitting = true
                     return SignUp()
                         .signUpWithEmail(
                             state: &state.signUp,
@@ -88,8 +91,10 @@ public struct Registration: Sendable {
                         )
                         .map { Action.internal(.signUp($0)) }
                 case .didTapNavigateToBack:
+                    guard !state.isSubmitting else { return .none }
                     return .run { _ in await dismiss() }
                 case .didTapNavigateToSignIn:
+                    guard !state.isSubmitting else { return .none }
                     return .send(.delegate(.navigateToSignIn))
                 case .binding:
                     return .none
@@ -99,8 +104,10 @@ public struct Registration: Sendable {
             NestedAction(\.internal) { state, action in
                 switch action {
                 case .signUp(.delegate(.navigateToSetup)):
+                    state.isSubmitting = false
                     return .send(.delegate(.navigateToSetUp))
                 case .signUp(.delegate(.didThrowError(let error))):
+                    state.isSubmitting = false
                     guard let message = error.userMessage else { return .none }
                     state.alert = AlertState {
                         TextState("Couldn’t create your account")

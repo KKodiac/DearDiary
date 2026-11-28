@@ -5,7 +5,9 @@ public struct PrimaryTextFieldStyle: TextFieldStyle {
     public func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
-            .padding(9)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .frame(minHeight: 44)
             .background(DesignSystemAsset.ddFill.swiftUIColor)
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay {
@@ -33,8 +35,7 @@ public struct ChatTextFieldStyle: TextFieldStyle {
     public func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .multilineTextAlignment(.leading)
-            .lineLimit(nil)
-            .font(.subheadline)
+            .font(.body)
             .padding(10)
             .foregroundStyle(colorScheme == .dark ? .white : .black)
             .background(DesignSystemAsset.ddSecondaryBackground.swiftUIColor)

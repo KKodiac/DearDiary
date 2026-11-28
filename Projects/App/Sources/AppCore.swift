@@ -23,6 +23,7 @@ struct DearDiary {
     }
     
     @Dependency(\.continuousClock) private var runner
+    @Dependency(\.date.now) private var now
     
     var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -36,19 +37,19 @@ struct DearDiary {
             case .navigateToFeature:
                 if state.uid.isEmpty { state.destination = .auth(Account.State()) }
                 else if state.diaryName.isEmpty { state.destination = .auth(Account.State(destination: .setUp(Setup.State()))) }
-                else if !state.diaryName.isEmpty && !state.uid.isEmpty { state.destination = .diary(Diary.State()) }
+                else if !state.diaryName.isEmpty && !state.uid.isEmpty { state.destination = .diary(Diary.State(focusDate: now)) }
                 return .none
             case \.destination.diary.delegate.signedOut:
                 state.destination = .auth(Account.State())
                 return .none
             case \.destination.auth.delegate.navigateToDiary:
-                state.destination = .diary(Diary.State())
+                state.destination = .diary(Diary.State(focusDate: now))
                 return .none
             case \.destination.auth.destination.authentication.delegate.navigateToDiary:
-                state.destination = .diary(Diary.State())
+                state.destination = .diary(Diary.State(focusDate: now))
                 return .none
             case \.destination.auth.destination.setUp.delegate.navigateToDiary:
-                state.destination = .diary(Diary.State())
+                state.destination = .diary(Diary.State(focusDate: now))
                 return .none
             default:
                 return .none
