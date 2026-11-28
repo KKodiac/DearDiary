@@ -4,16 +4,21 @@ import DesignSystem
 
 public struct ChatScreen: View {
     @Bindable var store: StoreOf<Memoir>
-    @AppStorage("DiaryName") private var diaryName: String?
     @Environment(\.colorScheme) private var colorScheme
     
     public var body: some View {
         VStack {
             if let error = store.errorMessage, !store.composing {
-                HStack {
-                    Text(error).font(.footnote).foregroundStyle(.red)
-                    Button("Retry") { store.send(.didTapRetry) }
-                        .disabled(store.isWorking || store.failedMessage == nil)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(error).font(.footnote)
+                    Button {
+                        store.send(.didTapRetry)
+                    } label: {
+                        Text("Retry")
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .disabled(store.isWorking || store.failedMessage == nil)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.vertical, 6)
@@ -64,7 +69,7 @@ public struct ChatScreen: View {
                 }
             }
             .padding(32)
-            .presentationDetents([.medium])
+            .presentationDetents([.medium, .large])
         }
     }
     
@@ -74,11 +79,12 @@ public struct ChatScreen: View {
             prompt: Text("What happened today?"),
             axis: .vertical
         ) {
-            Text("Hello World")
+            Text("Message")
         }
         .textFieldStyle(
             ChatTextFieldStyle(colorScheme: colorScheme)
         )
+        .accessibilityLabel("Message")
         .onSubmit { store.send(.didTapSendButton) }
         .disabled(store.isWorking)
     }
@@ -88,7 +94,11 @@ public struct ChatScreen: View {
             store.send(.didTapSendButton)
         } label: {
             DesignSystemAsset.send.swiftUIImage
+                .renderingMode(.template)
+                .foregroundStyle(.primary)
                 .padding(10)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
                 .background(DesignSystemAsset.ddBackgroundAccent.swiftUIColor)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .overlay {
@@ -100,6 +110,7 @@ public struct ChatScreen: View {
                         )
                 }
         }
+        .accessibilityLabel("Send message")
         .disabled(store.isWorking || store.dialogue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
     }
     
@@ -109,7 +120,7 @@ public struct ChatScreen: View {
             if content.role == .user {
                 Spacer()
             } else {
-                assistantProfile
+                assistantProfile.accessibilityHidden(true)
             }
             
             bubbleContent(for: content)
@@ -119,6 +130,9 @@ public struct ChatScreen: View {
             }
         }
         .padding(.vertical, 10)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(content.role == .user ? "You" : store.diaryName)
+        .accessibilityValue("\(content.content), \(content.createdAt.formatted(date: .omitted, time: .shortened))")
     }
     
     private var assistantProfile: some View {
@@ -150,24 +164,17 @@ public struct ChatScreen: View {
     private func messageContent(for content: Dialogue) -> some View {
         VStack {
             Text(content.content)
-                .font(.subheadline)
-                .fontWeight(.light)
+                .font(.body)
                 .padding(.horizontal, 15)
                 .padding(.vertical, 12)
                 .foregroundStyle(
-                    content.role == .user
-                    ? .white
-                    : colorScheme == .dark
-                    ? .white
-                    : .black
+                    content.role == .user ? Color.white : Color.primary
                 )
         }
         .background(
             content.role == .user
-            ? DesignSystemAsset.ddAccent.swiftUIColor
-            : colorScheme == .dark
-            ? DesignSystemAsset.ddPrimary.swiftUIColor
-            : Color.white
+            ? DesignSystemAsset.ddAccentFill.swiftUIColor
+            : DesignSystemAsset.ddSecondaryBackground.swiftUIColor
         )
         .clipShape(UnevenRoundedRectangle(
             topLeadingRadius: content.role == .user ? 14 : 0,

@@ -18,9 +18,12 @@ struct AppView: View {
             ZStack {
                 DesignSystemAsset.ddPrimaryBackground.swiftUIColor
                     .ignoresSafeArea()
-                Text("Dear Diary").primaryTextStyle().offset(y: -50)
                 if let store = store.scope(state: \.destination?.auth, action: \.destination.auth) {
                     AccountView(store: store)
+                } else {
+                    Text("Dear Diary")
+                        .primaryTextStyle()
+                        .offset(y: -50)
                 }
             }
             .onAppear {

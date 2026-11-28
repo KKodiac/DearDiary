@@ -12,10 +12,7 @@ public struct DateDivider: View {
             HStack(spacing: 16) {
                 Text(
                     "\(abbreviated()).\(Calendar.current.component(.day, from: date))"
-                ).font(
-                    DesignSystemFontFamily.Pretendard.regular
-                        .swiftUIFont(size: 16)
-                )
+                ).font(.body)
                 VStack {
                     Divider()
                         .foregroundStyle(
@@ -26,10 +23,7 @@ public struct DateDivider: View {
                 }
             }
             Text(date.formatted(date: .omitted, time: .shortened))
-                .font(
-                    DesignSystemFontFamily.Pretendard.regular
-                        .swiftUIFont(size: 13)
-                )
+                .font(.footnote)
                 .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
         }
     }

@@ -5,7 +5,7 @@ import SwiftUI
 @ViewAction(for: Account.self)
 public struct AccountView: View {
     @Bindable public var store: StoreOf<Account>
-    @Environment(\.authorizationController) private var controller
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     public init(store: StoreOf<Account>) {
         self.store = store
@@ -17,10 +17,12 @@ public struct AccountView: View {
             CircularButton(image: DesignSystemAsset.google) {
                 send(.didTapSignInWithGoogle)
             }
+            .accessibilityLabel("Sign in with Google")
             
             CircularButton(image: DesignSystemAsset.apple) {
                 send(.didTapSignInWithApple)
             }
+            .accessibilityLabel("Sign in with Apple")
         }
     }
     
@@ -38,7 +40,10 @@ public struct AccountView: View {
     
     @ViewBuilder
     public var confirmSection: some View {
-        HStack(spacing: 3) {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: 0))
+            : AnyLayout(HStackLayout(spacing: 3))
+        layout {
             Text("Have an Existing Account?")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -47,10 +52,9 @@ public struct AccountView: View {
                 send(.didTapSignInWithEmail)
             } label: {
                 Text("Log In")
-                    .font(
-                        DesignSystemFontFamily.Pretendard.bold
-                            .swiftUIFont(size: 16)
-                    )
+                    .font(.subheadline.bold())
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
                     .foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
             }
         }
@@ -72,21 +76,25 @@ public struct AccountView: View {
         NavigationStack {
             ZStack {
                 DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea()
-                Text("Dear Diary").primaryTextStyle().offset(y: -50)
-                VStack {
-                    Spacer()
-                    if store.error != nil {
-                        Text("Sign-in is unavailable. Please try again later.")
-                            .font(.callout)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.bottom)
+                ScrollView {
+                    VStack(spacing: 16) {
+                        Text("Dear Diary")
+                            .primaryTextStyle()
+                            .accessibilityAddTraits(.isHeader)
+                        if store.error != nil {
+                            Text("Sign-in is unavailable. Please try again later.")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.bottom)
+                        }
+                        socialSection
+                        emailSection
+                        confirmSection
                     }
-                    socialSection
-                    emailSection
-                    confirmSection
+                    .primaryHorizontalPadding()
+                    .padding(.top, 40)
                 }
-                .primaryHorizontalPadding()
             }
             .onOpenURL { url in
                 send(.didReceiveOpenURL(url))

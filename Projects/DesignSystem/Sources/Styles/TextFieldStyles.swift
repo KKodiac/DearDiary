@@ -6,11 +6,12 @@ public struct PrimaryTextFieldStyle: TextFieldStyle {
         configuration
             .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
             .padding(9)
+            .frame(minHeight: 44)
             .background(DesignSystemAsset.ddFill.swiftUIColor)
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay {
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(DesignSystemAsset.ddSolid.swiftUIColor)
+                    .stroke(DesignSystemAsset.ddPrimary.swiftUIColor)
             }
     }
 }
@@ -20,13 +21,18 @@ public struct SecondaryTextFieldStyle: TextFieldStyle {
     public func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
             .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
+            .frame(minHeight: 44)
 
-        Divider().foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
+        Rectangle()
+            .fill(DesignSystemAsset.ddAccent.swiftUIColor)
+            .frame(height: 1)
+            .accessibilityHidden(true)
     }
 }
 
 public struct ChatTextFieldStyle: TextFieldStyle {
     private let colorScheme: ColorScheme?
+
     public init(colorScheme: ColorScheme? = nil) {
         self.colorScheme = colorScheme
     }
@@ -36,7 +42,8 @@ public struct ChatTextFieldStyle: TextFieldStyle {
             .lineLimit(nil)
             .font(.subheadline)
             .padding(10)
-            .foregroundStyle(colorScheme == .dark ? .white : .black)
+            .frame(minHeight: 44)
+            .foregroundStyle(colorScheme == .dark ? Color.white : Color.black)
             .background(DesignSystemAsset.ddSecondaryBackground.swiftUIColor)
             .clipShape(RoundedRectangle(cornerRadius: 12))
     }

@@ -7,20 +7,19 @@ struct SetupScreen: View {
     @Bindable public var store: StoreOf<Setup>
     
     var body: some View {
-        VStack {
-            Spacer()
-            titleSection
-            Spacer()
-            formSection
-            Spacer()
-            if let error = store.errorMessage {
-                Text(error).font(.callout).foregroundStyle(.secondary)
+        ScrollView {
+            VStack(spacing: 24) {
+                titleSection
+                formSection
+                if let error = store.errorMessage {
+                    Text(error).font(.callout).foregroundStyle(.secondary)
+                }
+                getStartedButton
             }
-            getStartedButton
+            .padding(24)
         }
-        .padding(.all)
-        .padding(.horizontal)
-        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
+        .scrollDismissesKeyboard(.interactively)
+        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea())
         .onAppear { send(.didAppear) }
     }
     
@@ -29,9 +28,10 @@ struct SetupScreen: View {
         VStack {
             Text("Dear Diary")
                 .primaryTextStyle()
-                .offset(y: Layout.Offset.title)
+                .accessibilityAddTraits(.isHeader)
             
             DesignSystemAsset.diary.swiftUIImage
+                .accessibilityHidden(true)
         }
     }
     
@@ -45,22 +45,21 @@ struct SetupScreen: View {
     private var diaryNameSection: some View {
         VStack(alignment: .leading) {
             Text("Name your diary...")
-                .font(
-                    DesignSystemFontFamily.Pretendard.regular
-                        .swiftUIFont(size: 14)
-                )
+                .font(.subheadline)
+                .accessibilityHidden(true)
             
             TextField(text: $store.name) {
                 Text("ex) Kitty")
             }
             .textFieldStyle(PrimaryTextFieldStyle())
+            .accessibilityLabel("Diary name")
         }
     }
     
     private var personalitySection: some View {
         VStack(alignment: .leading) {
             Text("Select the personality of your diary...")
-                .font(DesignSystemFontFamily.Pretendard.regular.swiftUIFont(size: 14))
+                .font(.subheadline)
                 .padding(.top, Layout.Padding.top)
             
             personalityPicker
@@ -71,7 +70,12 @@ struct SetupScreen: View {
         DisclosureGroup(
             isExpanded: $store.expanded,
             content: { personalityOptions },
-            label: { Text(store.personality.rawValue) }
+            label: {
+                Text(store.personality.rawValue)
+                    .frame(minHeight: 44)
+                    .accessibilityLabel("Diary personality")
+                    .accessibilityValue(store.personality.rawValue)
+            }
         )
         .padding(Layout.Padding.form)
         .background(DesignSystemAsset.ddFill.swiftUIColor)
@@ -79,7 +83,7 @@ struct SetupScreen: View {
         .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
         .overlay {
             RoundedRectangle(cornerRadius: Layout.CornerRadius.medium)
-                .stroke(DesignSystemAsset.ddSolid.swiftUIColor)
+                .stroke(DesignSystemAsset.ddPrimary.swiftUIColor)
         }
     }
     
@@ -93,7 +97,10 @@ struct SetupScreen: View {
                     Text(personality.rawValue).font(.headline)
                     Spacer()
                 }
+                .frame(minHeight: 44)
+                .contentShape(Rectangle())
             }
+            .accessibilityAddTraits(store.personality == personality ? .isSelected : [])
         }
     }
     

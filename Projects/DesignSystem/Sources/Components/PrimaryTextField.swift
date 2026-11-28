@@ -13,8 +13,9 @@ public struct PrimaryTextField: View {
     
     public var body: some View {
         VStack(alignment: .leading) {
-            Text(header).accentTextStyle()
+            Text(header).accentTextStyle().accessibilityHidden(true)
             TextField("", text: $text)
+                .accessibilityLabel(header)
         }
     }
 }

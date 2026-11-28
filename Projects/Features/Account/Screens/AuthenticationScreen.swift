@@ -10,16 +10,18 @@ struct AuthenticationScreen: View {
         ZStack {
             DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea()
             
-            VStack {
-                Spacer()
-                welcomeSection
-                socialLoginButtons
-                PrimaryDivider().padding(.vertical, Layout.Spacing.medium)
-                credentialsSection
-                Spacer()
-                loginSection
+            ScrollView {
+                VStack {
+                    welcomeSection
+                    socialLoginButtons
+                    PrimaryDivider().padding(.vertical, Layout.Spacing.medium)
+                    credentialsSection
+                    loginSection
+                }
+                .primaryHorizontalPadding()
+                .padding(.vertical)
             }
-            .primaryHorizontalPadding()
+            .scrollDismissesKeyboard(.interactively)
         }
         .toolbar { toolbarContent }
         .alert($store.scope(state: \.alert, action: \.alert))
@@ -29,6 +31,7 @@ struct AuthenticationScreen: View {
     private var welcomeSection: some View {
         Text("Welcome Back")
             .secondaryTextStyle()
+            .accessibilityAddTraits(.isHeader)
             .padding(.bottom, Layout.Padding.bottom)
     }
     
@@ -38,9 +41,11 @@ struct AuthenticationScreen: View {
             CircularButton(image: DesignSystemAsset.google) {
                 send(.didTapSignInWithGoogle)
             }
+            .accessibilityLabel("Sign in with Google")
             CircularButton(image: DesignSystemAsset.apple) {
                 send(.didTapSignInWithApple)
             }
+            .accessibilityLabel("Sign in with Apple")
         }
     }
     
@@ -68,8 +73,10 @@ struct AuthenticationScreen: View {
                 send(.didTapNavigateToSignUp)
             } label: {
                 Text("Go to Sign Up")
-                    .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 14))
+                    .font(.subheadline.bold())
                     .foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
+                    .frame(minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .padding(.bottom, Layout.Padding.bottom)
         }
@@ -81,8 +88,12 @@ struct AuthenticationScreen: View {
             Button {
                 send(.didTapNavigateToBack)
             } label: {
-                DesignSystemAsset.back.swiftUIImage.foregroundStyle(.black)
+                Image(systemName: "chevron.backward")
+                    .foregroundStyle(.primary)
+                    .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
+            .accessibilityLabel("Back")
         }
     }
 }

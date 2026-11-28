@@ -5,10 +5,12 @@ public struct PrimaryButtonStyle: ButtonStyle {
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding()
-            .background(DesignSystemAsset.ddAccent.swiftUIColor)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+            .background(DesignSystemAsset.ddAccentFill.swiftUIColor)
             .foregroundStyle(.white)
             .clipShape(RoundedRectangle(cornerRadius: 16.0))
-            .font(DesignSystemFontFamily.Pretendard.bold.swiftUIFont(size: 16))
+            .font(.headline)
             .opacity(configuration.isPressed ? 0.4 : 1.0)
     }
 }
@@ -18,7 +20,9 @@ public struct SecondaryButtonStyle: ButtonStyle {
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(12)
-            .background(DesignSystemAsset.ddAccent.swiftUIColor)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+            .background(DesignSystemAsset.ddAccentFill.swiftUIColor)
             .foregroundStyle(.white)
             .clipShape(RoundedRectangle(cornerRadius: 10.0))
             .font(.subheadline)
@@ -32,10 +36,12 @@ public struct ComposeButtonStyle: ButtonStyle {
         configuration.label
             .padding(.horizontal, 34)
             .padding(.vertical, 12)
-            .background(DesignSystemAsset.ddAccent.swiftUIColor)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+            .background(DesignSystemAsset.ddAccentFill.swiftUIColor)
             .foregroundStyle(.white)
             .clipShape(RoundedRectangle(cornerRadius: 5))
-            .font(.system(size: 12))
+            .font(.footnote)
             .opacity(configuration.isPressed ? 0.4 : 1.0)
     }
 }
@@ -49,10 +55,12 @@ public struct PauseButtonStyle: ButtonStyle {
         configuration.label
             .padding(.horizontal, 34)
             .padding(.vertical, 12)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
             .background(DesignSystemAsset.ddTernaryBackground.swiftUIColor)
             .foregroundStyle(DesignSystemAsset.ddAccent.swiftUIColor)
             .clipShape(RoundedRectangle(cornerRadius: 5))
-            .font(.system(size: 12))
+            .font(.footnote)
             .overlay {
                 RoundedRectangle(cornerRadius: 5)
                     .stroke(
@@ -70,12 +78,12 @@ public struct ToolbarPrimaryButtonStyle: ButtonStyle {
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .padding(8)
-            .background(DesignSystemAsset.ddAccent.swiftUIColor)
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
+            .background(DesignSystemAsset.ddAccentFill.swiftUIColor)
             .foregroundStyle(.white)
             .clipShape(RoundedRectangle(cornerRadius: 10.0))
-            .font(
-                DesignSystemFontFamily.Pretendard.regular.swiftUIFont(size: 12)
-            )
+            .font(.footnote)
             .opacity(configuration.isPressed ? 0.4 : 1.0)
     }
 }

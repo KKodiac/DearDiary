@@ -11,10 +11,13 @@ public struct DiaryDetailView: View {
     }
     
     public var body: some View {
-        ZStack {
-            mainContent
-            editButtonOverlay
-        }
+        mainContent
+            .safeAreaInset(edge: .bottom, alignment: .trailing) {
+                editButton
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .background(.background)
+            }
         .padding(.horizontal)
         .navigationBarBackButtonHidden()
         .navigationBarTitleDisplayMode(.inline)
@@ -40,30 +43,25 @@ public struct DiaryDetailView: View {
     
     private var titleText: some View {
         Text(store.entry.title)
-            .font(
-                DesignSystemFontFamily.Pretendard.bold
-                    .swiftUIFont(size: 23)
-            )
+            .font(.title2.bold())
+            .accessibilityAddTraits(.isHeader)
     }
     
+    @ViewBuilder
     private var contentEditor: some View {
-        TextEditor(text: $store.entry.content)
-            .multilineTextAlignment(.leading)
-            .disabled(!store.editable)
+        if store.editable {
+            TextEditor(text: $store.entry.content)
+                .accessibilityLabel("Diary entry")
+        } else {
+            ScrollView {
+                Text(store.entry.content)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .textSelection(.enabled)
+            }
+        }
     }
     
     // MARK: - Edit Button
-    private var editButtonOverlay: some View {
-        VStack(alignment: .trailing) {
-            Spacer()
-            HStack {
-                Spacer()
-                editButton
-            }
-        }
-        .padding(.trailing, 10)
-    }
-    
     private var editButton: some View {
         Button {
             store.send(.didTapEditButton)
@@ -71,9 +69,11 @@ public struct DiaryDetailView: View {
             Image(systemName: store.editable ? "checkmark" : "pencil")
                 .bold()
                 .foregroundColor(.white)
-                .padding()
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Circle())
         }
-        .background(DesignSystemAsset.ddAccent.swiftUIColor)
+        .accessibilityLabel(store.editable ? "Finish editing" : "Edit entry")
+        .background(DesignSystemAsset.ddAccentFill.swiftUIColor)
         .clipShape(Circle())
     }
     
@@ -97,9 +97,12 @@ public struct DiaryDetailView: View {
         Button {
             store.send(.didTapBackButton)
         } label: {
-            DesignSystemAsset.back.swiftUIImage
-                .foregroundStyle(.black)
+            Image(systemName: "chevron.backward")
+                .foregroundStyle(.primary)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel("Back")
     }
     
     private var dateTitle: some View {

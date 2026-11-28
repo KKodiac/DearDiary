@@ -34,6 +34,8 @@ public struct SearchScreen: View {
                     set: { store.send(.queryChanged($0)) }
                 )
             )
+            .frame(minHeight: 44)
+            .contentShape(Rectangle())
             .submitLabel(.search)
             .onSubmit { store.send(.submit) }
             .accessibilityLabel("Search diary entries")
@@ -44,6 +46,7 @@ public struct SearchScreen: View {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
                         .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
                 }
                 .accessibilityLabel("Clear search")
             }

@@ -6,6 +6,7 @@ import DesignSystem
 public struct MemoirScreen: View {
     @Bindable var store: StoreOf<Memoir>
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     
     public init(store: StoreOf<Memoir>) {
         self.store = store
@@ -36,10 +37,12 @@ public struct MemoirScreen: View {
     // MARK: - Toolbar Content
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItemGroup(placement: .topBarLeading) {
+        ToolbarItem(placement: .topBarLeading) {
+            backButton
+        }
+        ToolbarItem(placement: .principal) {
             navigationHeader
         }
-        
     }
     
     // MARK: - Header Section
@@ -67,21 +70,18 @@ public struct MemoirScreen: View {
     }
     
     private var headerDivider: some View {
-        Divider()
-            .foregroundStyle(DesignSystemAsset.ddSecondary.swiftUIColor)
-            .overlay {
-                Text("Should I ask \(store.diaryName) to write your diary?")
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 15)
-                    .font(.caption)
-                    .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
-                    .background(DesignSystemAsset.toolbarBackground.swiftUIColor)
-            }
+        Text("Should I ask \(store.diaryName) to write your diary?")
+            .font(.subheadline)
+            .multilineTextAlignment(.center)
+            .accessibilityAddTraits(.isHeader)
             .padding([.horizontal, .bottom])
     }
     
     private var actionButtons: some View {
-        HStack {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout())
+            : AnyLayout(HStackLayout())
+        return layout {
             composeButton
             hideButton
         }
@@ -94,8 +94,11 @@ public struct MemoirScreen: View {
             store.send(.didTapToggleHeaderButton, animation: .bouncy)
         } label: {
             Image(systemName: "arrowshape.down.fill")
-                .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
+                .foregroundStyle(.primary)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Circle())
         }
+        .accessibilityLabel("Show composition options")
         .buttonStyle(.bordered)
         .buttonBorderShape(.circle)
         .padding(.top, 10)
@@ -132,19 +135,23 @@ public struct MemoirScreen: View {
     // MARK: - Supporting Views
     private var navigationHeader: some View {
         HStack {
-            backButton
-            profileImage
+            profileImage.accessibilityHidden(true)
             profileInfo
         }
-        .padding(.vertical)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
     }
     
     private var backButton: some View {
         Button {
             store.send(.didTapNavigateToBack)
         } label: {
-            DesignSystemAsset.back.swiftUIImage.foregroundStyle(.black)
+            Image(systemName: "chevron.backward")
+                .foregroundStyle(.primary)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel("Back")
     }
     
     private var profileImage: some View {
@@ -185,11 +192,6 @@ public struct MemoirScreen: View {
             HStack {
                 Spacer()
                 Text("Hide")
-                    .foregroundStyle(
-                        colorScheme == .dark
-                        ? DesignSystemAsset.ddSecondary.swiftUIColor
-                        : DesignSystemAsset.ddAccent.swiftUIColor
-                    )
                 Spacer()
             }
         }
@@ -199,8 +201,9 @@ public struct MemoirScreen: View {
     private var initialView: some View {
         Group {
             DesignSystemAsset.character.swiftUIImage
+                .accessibilityHidden(true)
             Text("Say 'Hello!' to your Diary!")
-                .opacity(0.6)
+                .foregroundStyle(.secondary)
                 .padding(.bottom, 20)
             
             Button("Hello, \(store.diaryName)") {

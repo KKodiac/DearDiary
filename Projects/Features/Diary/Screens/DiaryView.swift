@@ -7,17 +7,19 @@ import SwiftUI
 public struct DiaryView: View {
     @Bindable public var store: StoreOf<Diary>
     @StateObject private var controller = CalendarController()
-    @Environment(\.colorScheme) private var colorScheme
+    @ScaledMetric(relativeTo: .caption) private var calendarTextHeight = 16.0
     
     public init(store: StoreOf<Diary>) {
         self.store = store
     }
     
     public var body: some View {
-        ZStack {
-            mainContent
-            floatingActionButton
-        }
+        mainContent
+            .safeAreaInset(edge: .bottom, alignment: .trailing) {
+                floatingActionButton
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
+            }
         .navigationDestination(
             item: $store.scope(state: \.destination?.search, action: \.destination.search)
         ) { store in
@@ -37,8 +39,8 @@ public struct DiaryView: View {
     
     // MARK: - Main Content
     private var mainContent: some View {
-        GeometryReader { proxy in
-            VStack(spacing: 20) {
+        ScrollView {
+            LazyVStack(spacing: 20) {
                 headerView
                 if let error = store.sessionError {
                     sessionErrorBanner(error)
@@ -47,7 +49,7 @@ public struct DiaryView: View {
                 listView
             }
         }
-        .ignoresSafeArea(.all, edges: .bottom)
+        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor.ignoresSafeArea())
     }
 
     private func sessionErrorBanner(_ message: String) -> some View {
@@ -60,12 +62,13 @@ public struct DiaryView: View {
             } label: {
                 Image(systemName: "xmark")
                     .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .accessibilityLabel("Dismiss sign-out error")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
-        .foregroundStyle(.red)
+        .foregroundStyle(.primary)
         .background(.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
         .padding(.horizontal)
     }
@@ -73,13 +76,16 @@ public struct DiaryView: View {
     // MARK: - Header
     private var headerView: some View {
         HStack {
-            Text("Dear Diary").primaryTextStyle()
+            Text("Dear Diary")
+                .primaryTextStyle()
+                .accessibilityAddTraits(.isHeader)
             Spacer()
             Button {
                 send(.didTapSearch)
             } label: {
                 Image(systemName: "magnifyingglass")
                     .frame(minWidth: 44, minHeight: 44)
+                    .contentShape(Rectangle())
             }
             .accessibilityLabel("Search diary")
             settingsButton
@@ -126,26 +132,35 @@ public struct DiaryView: View {
             let value = direction == .previous ? -1 : 1
             controller.scrollTo(controller.yearMonth.addMonth(value: value), isAnimate: true)
         } label: {
-            (direction == .previous ? DesignSystemAsset.arrowleft : DesignSystemAsset.arrowright)
-                .swiftUIImage
+            Image(systemName: direction == .previous ? "chevron.backward" : "chevron.forward")
+                .foregroundStyle(.primary)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
-        .padding(25)
+        .accessibilityLabel(direction == .previous ? "Previous month" : "Next month")
     }
     
     private var monthYearLabel: some View {
-        Text("\(String(controller.yearMonth.year)).\(controller.yearMonth.month)")
-            .font(.system(size: 20))
-            .bold()
+        let month = controller.yearMonth
+        let heading = "\(month.year).\(month.month)"
+        let spokenMonth = Calendar.current.date(from: month.toDateComponents())?
+            .formatted(.dateTime.month(.wide).year())
+        return Text(heading)
+            .font(.headline)
+            .accessibilityLabel(spokenMonth ?? heading)
+            .accessibilityAddTraits(.isHeader)
             .padding(.vertical)
     }
     
     private var calendarGrid: some View {
         CalendarView(
             controller,
+            headerSize: .ratio,
             header: { weekHeader($0) },
             component: { dateCell($0) }
         )
-        .padding([.horizontal, .bottom], 30)
+        .frame(height: max(44, calendarTextHeight + 8) * 7)
+        .padding(.horizontal, 4)
     }
     
     private func weekHeader(_ week: Week) -> some View {
@@ -156,36 +171,39 @@ public struct DiaryView: View {
                 .frame(width: proxy.size.width,
                        height: proxy.size.height,
                        alignment: .center)
+                .accessibilityHidden(true)
         }
     }
     
-    @ViewBuilder
     private func dateCell(_ date: YearMonthDay) -> some View {
-        GeometryReader { proxy in
+        let isSelected = store.focusDate == date
+        let dayColor = date.isFocusYearMonth == true ? Color.primary : DesignSystemAsset.ddPrimary.swiftUIColor
+        return Button {
+            send(.didTapCalendarDate(date))
+        } label: {
             Text("\(date.day)")
-                .frame(width: proxy.size.width, height: proxy.size.height, alignment: .center)
                 .font(.caption)
-                .fontWeight(store.focusDate == date ? .bold : .light)
-                .background(
-                    DesignSystemAsset.ddAccent.swiftUIColor
-                        .clipShape(Circle())
-                        .opacity(store.focusDate == date ? 1 : 0)
-                )
-                .foregroundStyle(
-                    store.focusDate == date 
-                    ? Color.white 
-                    : colorScheme == .dark ? .primary : Color.black
-                )
-                .opacity(date.isFocusYearMonth == true ? 1 : 0.4)
-                .onTapGesture {
-                    send(.didTapCalendarDate(date))
+                .fontWeight(isSelected ? .bold : .regular)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+                .padding(4)
+                .background {
+                    if isSelected {
+                        Circle().fill(DesignSystemAsset.ddAccentFill.swiftUIColor)
+                    }
                 }
+                .foregroundStyle(isSelected ? Color.white : dayColor)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(date.date?.formatted(date: .complete, time: .omitted) ?? String(date.day))
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
     }
     
     // MARK: - List
     private var listView: some View {
-        VStack {
+        LazyVStack {
             dateHeader
             entriesList
         }
@@ -204,18 +222,11 @@ public struct DiaryView: View {
     }
     
     private var dateHeader: some View {
-        Divider()
-            .overlay {
-                HStack {
-                    Text("\(store.focusDate.date?.formatted(date: .abbreviated, time: .omitted) ?? "")")
-                        .foregroundStyle(Color.gray)
-                        .padding(.trailing)
-                        .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
-                    Spacer()
-                }
-            }
-            .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
-            .padding()
+        Text(store.focusDate.date?.formatted(date: .abbreviated, time: .omitted) ?? "")
+            .font(.headline)
+            .accessibilityAddTraits(.isHeader)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal)
     }
     
     @ViewBuilder
@@ -226,7 +237,13 @@ public struct DiaryView: View {
         } else if let error = store.loadError {
             VStack(spacing: 12) {
                 Text(error).font(.callout)
-                Button("Try Again") { send(.didTapRetry) }
+                Button {
+                    send(.didTapRetry)
+                } label: {
+                    Text("Try Again")
+                        .frame(minWidth: 44, minHeight: 44)
+                        .contentShape(Rectangle())
+                }
             }
             .padding()
         } else if store.hasLoaded && store.focusedEntries.isEmpty {
@@ -236,12 +253,8 @@ public struct DiaryView: View {
                 description: Text("Start a conversation to write a diary entry.")
             )
         } else {
-            ScrollView {
-                LazyVStack {
-                    ForEach(store.focusedEntries, id: \.self) { entry in
-                        entryCard(for: entry)
-                    }
-                }
+            ForEach(store.focusedEntries, id: \.self) { entry in
+                entryCard(for: entry)
             }
         }
     }
@@ -252,20 +265,16 @@ public struct DiaryView: View {
         } label: {
             Card(title: entry.title, content: entry.content, timestamp: entry.createdAt)
         }
-        .tint(.black)
+        .buttonStyle(.plain)
+        .accessibilityHint("Open diary entry")
     }
     
     // MARK: - Supporting Views
     private var floatingActionButton: some View {
-        VStack(alignment: .trailing) {
-            Spacer()
-            HStack {
-                Spacer()
-                FloatingButton(image: DesignSystemAsset.imoji) {
-                    send(.didTapMemoirButton)
-                }
-            }
+        FloatingButton(image: DesignSystemAsset.imoji) {
+            send(.didTapMemoirButton)
         }
+        .accessibilityLabel("Open diary conversation")
         .padding()
     }
     
@@ -276,8 +285,9 @@ public struct DiaryView: View {
             Image(systemName: "gear")
                 .font(.title)
                 .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
-                .foregroundStyle(DesignSystemAsset.ddSecondary.swiftUIColor)
+                .foregroundStyle(.primary)
                 .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
         }
         .accessibilityLabel("Settings")
     }
