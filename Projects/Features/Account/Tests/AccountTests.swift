@@ -32,6 +32,7 @@ struct AccountTests {
             $0.isSubmitting = false
             $0.error = Account.FeatureError(error: error)
         }
+        #expect(store.state.error?.userMessage == "Account services are unavailable right now. Please try again later.")
         await store.send(.view(.didTapSignInWithEmail)) {
             $0.destination = .authentication(Authentication.State(clientUID: $0.$clientUID))
         }
@@ -54,6 +55,18 @@ struct AccountTests {
         }
         await store.send(.view(.didTapSignInWithEmail)) {
             $0.destination = .authentication(Authentication.State(clientUID: $0.$clientUID))
+        }
+    }
+
+    @MainActor
+    @Test func appleCancellationClearsProgressWithoutShowingAnError() async {
+        var state = Account.State()
+        state.isSubmitting = true
+        let store = TestStore(initialState: state) { Account() }
+        let cancellation = SignIn.FeatureError.authClientError(.appleAuthError(.canceled))
+
+        await store.send(.internal(.signIn(.delegate(.didThrowError(cancellation))))) {
+            $0.isSubmitting = false
         }
     }
 
