@@ -84,6 +84,7 @@ public struct ChatScreen: View {
         .textFieldStyle(
             ChatTextFieldStyle(colorScheme: colorScheme)
         )
+        .accessibilityLabel("Message")
         .onSubmit { store.send(.didTapSendButton) }
         .disabled(store.isWorking)
     }

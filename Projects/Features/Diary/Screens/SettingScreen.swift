@@ -12,6 +12,7 @@ public struct SettingView: View {
         Form {
             Section("Your diary") {
                 TextField("Diary name", text: $store.draftName)
+                    .accessibilityLabel("Diary name")
                     .textInputAutocapitalization(.words)
                     .submitLabel(.done)
                     .onSubmit { store.send(.saveName) }

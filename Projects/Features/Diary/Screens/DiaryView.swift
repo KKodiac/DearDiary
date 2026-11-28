@@ -17,6 +17,8 @@ public struct DiaryView: View {
         mainContent
             .safeAreaInset(edge: .bottom, alignment: .trailing) {
                 floatingActionButton
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .background(DesignSystemAsset.ddPrimaryBackground.swiftUIColor)
             }
         .navigationDestination(
             item: $store.scope(state: \.destination?.search, action: \.destination.search)
@@ -139,8 +141,13 @@ public struct DiaryView: View {
     }
     
     private var monthYearLabel: some View {
-        Text("\(String(controller.yearMonth.year)).\(controller.yearMonth.month)")
+        let month = controller.yearMonth
+        let heading = "\(month.year).\(month.month)"
+        let spokenMonth = Calendar.current.date(from: month.toDateComponents())?
+            .formatted(.dateTime.month(.wide).year())
+        return Text(heading)
             .font(.headline)
+            .accessibilityLabel(spokenMonth ?? heading)
             .accessibilityAddTraits(.isHeader)
             .padding(.vertical)
     }

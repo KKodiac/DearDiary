@@ -13,7 +13,10 @@ public struct DiaryDetailView: View {
     public var body: some View {
         mainContent
             .safeAreaInset(edge: .bottom, alignment: .trailing) {
-                editButton.padding(.vertical, 8)
+                editButton
+                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                    .background(.background)
             }
         .padding(.horizontal)
         .navigationBarBackButtonHidden()

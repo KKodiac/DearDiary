@@ -37,10 +37,12 @@ public struct MemoirScreen: View {
     // MARK: - Toolbar Content
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
-        ToolbarItemGroup(placement: .topBarLeading) {
+        ToolbarItem(placement: .topBarLeading) {
+            backButton
+        }
+        ToolbarItem(placement: .principal) {
             navigationHeader
         }
-        
     }
     
     // MARK: - Header Section
@@ -133,12 +135,11 @@ public struct MemoirScreen: View {
     // MARK: - Supporting Views
     private var navigationHeader: some View {
         HStack {
-            backButton
             profileImage.accessibilityHidden(true)
             profileInfo
-                .accessibilityElement(children: .combine)
         }
-        .padding(.vertical)
+        .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isHeader)
     }
     
     private var backButton: some View {

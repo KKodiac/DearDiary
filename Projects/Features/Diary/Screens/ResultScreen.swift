@@ -15,7 +15,10 @@ public struct ResultScreen: View {
                 if store.entry != nil {
                     mainContent
                         .safeAreaInset(edge: .bottom, alignment: .trailing) {
-                            editButton.padding(.vertical, 8)
+                            editButton
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                                .background(.background)
                         }
                 } else {
                     ContentUnavailableView(

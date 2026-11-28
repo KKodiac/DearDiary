@@ -18,7 +18,7 @@ public struct Card: View {
                 .foregroundStyle(.primary)
             Text(timestamp.formatted(date: .omitted, time: .shortened))
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(DesignSystemAsset.ddPrimary.swiftUIColor)
             Text(content)
                 .font(.body)
                 .foregroundStyle(.primary)
